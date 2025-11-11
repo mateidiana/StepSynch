@@ -1,0 +1,238 @@
+package com.example.stepsynch.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.navigation.NavController
+
+@Composable
+fun SignUpScreen(navController: NavController) {
+
+    // 🌿 Shared color palette
+    val lightestGreen = Color(0xFFEAF4E0)
+    val forestGreen = Color(0xFF709255)
+    val deepGreen = Color(0xFF3E5622)
+    val darkGreen = Color(0xFF172815)
+    val paleWhiteGreen = Color(0xFFF6FAF2)
+
+    // 🧠 Input state
+    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(lightestGreen)
+            .padding(24.dp)
+    ) {
+
+        IconButton(
+            onClick = { navController.navigateUp() },
+            modifier = Modifier.align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = deepGreen
+            )
+        }
+
+        // 🌱 Main content
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 64.dp)
+        ) {
+
+            // 👣 Circular walking icon
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(72.dp)
+                    .background(deepGreen, shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DirectionsWalk,
+                    contentDescription = "Footprint icon",
+                    tint = Color.White,
+                    modifier = Modifier.size(38.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 🔠 Title
+            Text(
+                text = "Create Account",
+                color = deepGreen,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Start your journey to a healthier lifestyle",
+                color = forestGreen.copy(alpha = 0.9f),
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 🧾 Custom-labeled input fields
+            InputField(label = "Full Name", value = fullName, onValueChange = { fullName = it }, forestGreen, paleWhiteGreen)
+            InputField(label = "Email", value = email, onValueChange = { email = it }, forestGreen, paleWhiteGreen, KeyboardType.Email)
+            InputField(label = "Password", value = password, onValueChange = { password = it }, forestGreen, paleWhiteGreen, isPassword = true)
+            InputField(label = "Confirm Password", value = confirmPassword, onValueChange = { confirmPassword = it }, forestGreen, paleWhiteGreen, isPassword = true)
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // 🟩 Create Account Button
+            Button(
+                onClick = { /* TODO: Sign up action */ },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = deepGreen,
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(50.dp)
+            ) {
+                Text("Create Account", fontWeight = FontWeight.Medium)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 🔹 OR Divider
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(0.85f)
+            ) {
+                Divider(
+                    color = forestGreen.copy(alpha = 0.4f),
+                    thickness = 1.dp,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = " OR ",
+                    color = forestGreen,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Divider(
+                    color = forestGreen.copy(alpha = 0.4f),
+                    thickness = 1.dp,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ⚪ Sign up with Google Button
+            OutlinedButton(
+                onClick = { /* TODO: Sign up with Google */ },
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.White,
+                    contentColor = forestGreen
+                ),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(50.dp)
+            ) {
+                Text("Sign up with Google", fontWeight = FontWeight.Medium)
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 🔗 Already have an account?
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Already have an account? ",
+                    color = darkGreen,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = "Sign in",
+                    color = forestGreen,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        navController.navigate("signin")
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InputField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    forestGreen: Color,
+    backgroundColor: Color,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isPassword: Boolean = false
+) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier
+            .fillMaxWidth(0.85f)
+            .padding(bottom = 12.dp)
+    ) {
+        Text(
+            text = label,
+            color = forestGreen,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Enter $label", color = forestGreen.copy(alpha = 0.5f)) },
+            singleLine = true,
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = backgroundColor,
+                focusedContainerColor = backgroundColor,
+                unfocusedIndicatorColor = forestGreen.copy(alpha = 0.6f),
+                focusedIndicatorColor = forestGreen,
+                cursorColor = forestGreen
+            ),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp)
+        )
+    }
+}

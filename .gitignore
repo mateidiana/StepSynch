@@ -1,0 +1,53 @@
+# Gradle files
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+local.properties
+.gradle/
+.idea/
+*.iml
+
+# IntelliJ IDEA / Android Studio
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/shelf/
+.idea/deploymentTargetDropDown.xml
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Kotlin/Java
+*.class
+*.log
+
+# Generated folders
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Misc
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Keystore files (don’t ever commit these)
+*.jks
+*.keystore
+*.key
+
+# Gradle wrapper logs
+gradle-app.setting
+
+app/google-services.json
+app/local.properties
+
+
