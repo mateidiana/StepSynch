@@ -36,10 +36,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.navigation.NavController
+import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, authRepository: AuthRepository = AuthRepository()) {
+    var username by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        val currentUser = authRepository.currentUser.value
+        currentUser?.uid?.let { uid ->
+            authRepository.getUser(uid) { user ->
+                username = user?.username // set username from Firestore
+            }
+        }
+    }
 
     val dailyGoal = 10000
     val currentSteps = 8234
@@ -92,7 +103,8 @@ fun HomeScreen(navController: NavController) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Welcome back!", color = Color(0x993E5622))
                 Text(
-                    "Mock Username",
+//                    "Mock Username",
+                    username ?: "User",
                     color = Color(0xFF172815),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold

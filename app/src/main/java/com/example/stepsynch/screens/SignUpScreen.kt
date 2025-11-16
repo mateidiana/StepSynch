@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DirectionsWalk
@@ -14,17 +15,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavController
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun SignUpScreen(navController: NavController) {
+fun SignUpScreen(navController: NavController, authRepository: AuthRepository = AuthRepository()) {
+    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val lightestGreen = Color(0xFFEAF4E0)
     val forestGreen = Color(0xFF709255)
@@ -32,18 +39,13 @@ fun SignUpScreen(navController: NavController) {
     val darkGreen = Color(0xFF172815)
     val paleWhiteGreen = Color(0xFFF6FAF2)
 
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(lightestGreen)
             .padding(24.dp)
     ) {
-
+        // Back button
         IconButton(
             onClick = { navController.navigateUp() },
             modifier = Modifier.align(Alignment.TopStart)
@@ -62,7 +64,6 @@ fun SignUpScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(top = 40.dp)
         ) {
-
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -96,30 +97,61 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            InputField(label = "Full Name", value = fullName, onValueChange = { fullName = it }, forestGreen, paleWhiteGreen)
-            InputField(label = "Email", value = email, onValueChange = { email = it }, forestGreen, paleWhiteGreen, KeyboardType.Email)
-            InputField(label = "Password", value = password, onValueChange = { password = it }, forestGreen, paleWhiteGreen, isPassword = true)
-            InputField(label = "Confirm Password", value = confirmPassword, onValueChange = { confirmPassword = it }, forestGreen, paleWhiteGreen, isPassword = true)
+            // Input fields
+            InputField("Full Name", fullName, { fullName = it }, forestGreen, paleWhiteGreen)
+            InputField("Email", email, { email = it }, forestGreen, paleWhiteGreen, KeyboardType.Email)
+            InputField("Password", password, { password = it }, forestGreen, paleWhiteGreen, isPassword = true)
+            InputField("Confirm Password", confirmPassword, { confirmPassword = it }, forestGreen, paleWhiteGreen, isPassword = true)
 
             Spacer(modifier = Modifier.height(28.dp))
 
+            // Sign Up Button
             Button(
-                onClick = { navController.navigate("onboarding") },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = deepGreen,
-                    contentColor = Color.White
-                ),
+                onClick = {
+
+                    if (password != confirmPassword) {
+                        errorMessage = "Passwords do not match"
+                        return@Button
+                    }
+                    if (fullName.isBlank() || email.isBlank() || password.isBlank()) {
+                        errorMessage = "All fields are required"
+                        return@Button
+                    }
+
+                    isLoading = true
+                    errorMessage = null
+
+                    authRepository.signUp(email, password, fullName) { success, error ->
+                        isLoading = false
+                        if (success) {
+                            navController.navigate("onboarding") {
+                                popUpTo("signup") { inclusive = true }
+                            }
+                        } else {
+                            errorMessage = error ?: "Unknown error"
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = deepGreen, contentColor = Color.White),
                 shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
                     .height(50.dp)
             ) {
-                Text("Create Account", fontWeight = FontWeight.Medium)
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                } else {
+                    Text("Create Account", fontWeight = FontWeight.Medium)
+                }
+            }
+
+            errorMessage?.let {
+                Text(it, color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 OR Divider
+            // OR Divider
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(0.85f)
@@ -144,13 +176,9 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ⚪ Sign up with Google Button
             OutlinedButton(
                 onClick = { /* TODO: Sign up with Google */ },
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
-                    contentColor = forestGreen
-                ),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = forestGreen),
                 shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -161,7 +189,6 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 🔗 Already have an account?
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -176,9 +203,7 @@ fun SignUpScreen(navController: NavController) {
                     color = forestGreen,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable {
-                        navController.navigate("signin")
-                    }
+                    modifier = Modifier.clickable { navController.navigate("signin") }
                 )
             }
         }
@@ -229,3 +254,4 @@ private fun InputField(
         )
     }
 }
+

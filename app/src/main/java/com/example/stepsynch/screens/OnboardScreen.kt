@@ -18,14 +18,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun OnboardScreen(navController: NavController) {
+fun OnboardScreen(navController: NavController, authRepository: AuthRepository) {
+
+    var username by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        val currentUser = authRepository.currentUser.value
+        currentUser?.uid?.let { uid ->
+            authRepository.getUser(uid) { user ->
+                username = user?.username // set username from Firestore
+            }
+        }
+    }
 
     val slides = listOf(
         SlideData(
             icon = Icons.Default.DirectionsWalk,
-            title = "Track Your Steps",
+            title = "Track your steps",
             description = "Sync with Google Fit and let every step count towards your adventure",
             gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255)))
         ),
