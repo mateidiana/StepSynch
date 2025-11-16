@@ -24,7 +24,6 @@ import androidx.navigation.NavController
 @Composable
 fun SignInScreen(navController: NavController) {
 
-    // 🌿 Color palette
     val lightestGreen = Color(0xFFEAF4E0)
     val forestGreen = Color(0xFF709255)
     val deepGreen = Color(0xFF3E5622)
@@ -54,12 +53,11 @@ fun SignInScreen(navController: NavController) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 40.dp)
         ) {
 
             Spacer(modifier = Modifier.height(40.dp)) // Extra space at top
 
-            // 👣 Circular icon
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -74,7 +72,6 @@ fun SignInScreen(navController: NavController) {
                 )
             }
 
-            // 🔠 Title
             Text(
                 text = "Welcome back",
                 color = deepGreen,
@@ -82,7 +79,6 @@ fun SignInScreen(navController: NavController) {
                 fontWeight = FontWeight.Bold
             )
 
-            // 💬 Subtitle
             Text(
                 text = "Continue your adventure",
                 color = forestGreen.copy(alpha = 0.9f),
@@ -92,7 +88,6 @@ fun SignInScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 📧 Email input
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -106,7 +101,6 @@ fun SignInScreen(navController: NavController) {
                 shape = RoundedCornerShape(12.dp)
             )
 
-            // 🔒 Password input
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -120,7 +114,6 @@ fun SignInScreen(navController: NavController) {
                 shape = RoundedCornerShape(12.dp)
             )
 
-            // ✅ Remember me & Forgot password
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -149,9 +142,8 @@ fun SignInScreen(navController: NavController) {
                 )
             }
 
-            // 🔐 Sign in button
             Button(
-                onClick = { /* TODO */ },
+                onClick = { navController.navigate("home") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = deepGreen,
                     contentColor = Color.White
@@ -165,7 +157,6 @@ fun SignInScreen(navController: NavController) {
                 Text("Sign in", fontWeight = FontWeight.Medium)
             }
 
-            // 🔹 OR divider
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -188,7 +179,6 @@ fun SignInScreen(navController: NavController) {
                 )
             }
 
-            // 🌿 Second button (white) - Sign in with Google
             Button(
                 onClick = { /* TODO */ },
                 colors = ButtonDefaults.buttonColors(
@@ -204,7 +194,6 @@ fun SignInScreen(navController: NavController) {
                 Text("Sign in with Google", fontWeight = FontWeight.Medium)
             }
 
-            // ❓ Sign up link
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()

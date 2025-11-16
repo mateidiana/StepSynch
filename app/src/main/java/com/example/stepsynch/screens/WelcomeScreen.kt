@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 @Composable
 fun WelcomeScreen(navController: NavController) {
 
-    // 🌿 Natural, calming palette
     val lightestGreen = Color(0xFFEAF4E0)
     val forestGreen = Color(0xFF709255)
     val deepGreen = Color(0xFF3E5622)
@@ -46,20 +45,21 @@ fun WelcomeScreen(navController: NavController) {
         targetValue = if (isHovered) deepGreen.copy(alpha = 0.8f) else deepGreen,
         label = "hoverColorAnimation"
     )
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(lightestGreen)
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 24.dp)
+            .padding(top = 60.dp),   // FIXED top spacing
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(28.dp)
+
+        // --- Walking icon + Bolt badge ---
+        Box(
+            modifier = Modifier.size(80.dp),
+            contentAlignment = Alignment.Center
         ) {
 
-            // 👣 Circular walking icon
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -74,125 +74,145 @@ fun WelcomeScreen(navController: NavController) {
                 )
             }
 
-            // 🔠 Title
-            Text(
-                text = "StepQuest",
-                color = deepGreen,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // 💬 Subtitle
-            Text(
-                text = "Transform your steps into adventures.\nExplore, compete, and conquer challenges with friends.",
-                color = forestGreen.copy(alpha = 0.9f),
-                fontSize = 15.sp,
-                lineHeight = 22.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-
-            // 🧭 Feature grid (2x2)
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            // Bolt badge
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-2).dp, y = (-6).dp)
+                    .size(24.dp)
+                    .background(Color(0xFF83781B), shape = CircleShape),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FeatureBox(
-                        icon = Icons.Default.Explore,
-                        text = "Explore Maps",
-                        iconColor = deepGreen,
-                        textColor = darkGreen,
-                        boxColor = paleWhiteGreen,
-                        modifier = Modifier.weight(1f)
-                    )
-                    FeatureBox(
-                        icon = Icons.Default.Group,
-                        text = "Team Up",
-                        iconColor = deepGreen,
-                        textColor = darkGreen,
-                        boxColor = paleWhiteGreen,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FeatureBox(
-                        icon = Icons.Default.Bolt,
-                        text = "Earn Energy",
-                        iconColor = deepGreen,
-                        textColor = darkGreen,
-                        boxColor = paleWhiteGreen,
-                        modifier = Modifier.weight(1f)
-                    )
-                    FeatureBox(
-                        icon = Icons.Default.EmojiEvents,
-                        text = "Win Badges",
-                        iconColor = deepGreen,
-                        textColor = darkGreen,
-                        boxColor = paleWhiteGreen,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 🚪 Buttons section
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Sign in button (deep green)
-                Button(
-                    onClick = { navController.navigate("signin") },
-                    interactionSource = interactionSource,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = backgroundColor,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(50.dp)
-                ) {
-                    Text("Sign in ", fontWeight = FontWeight.Medium)
-                }
-
-                // Continue with email navigates to SignInScreen
-                OutlinedButton(
-                    onClick = { navController.navigate("signup") },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.White,
-                        contentColor = forestGreen
-                    ),
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(50.dp)
-                ) {
-                    Text("Create an account", fontWeight = FontWeight.Medium)
-                }
-
-                Text(
-                    text = "By continuing, you agree to sync your step data with Google Fit",
-                    color = forestGreen.copy(alpha = 0.8f),
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                Icon(
+                    imageVector = Icons.Default.Bolt,
+                    contentDescription = "Energy bolt",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        // --- Title ---
+        Text(
+            text = "StepQuest",
+            color = deepGreen,
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // --- Description ---
+        Text(
+            text = "Transform your steps into adventures.\nExplore, compete, and conquer challenges with friends.",
+            color = forestGreen.copy(alpha = 0.9f),
+            fontSize = 15.sp,
+            lineHeight = 22.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // --- Feature grid ---
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FeatureBox(
+                    icon = Icons.Default.Explore,
+                    text = "Explore Maps",
+                    iconColor = deepGreen,
+                    textColor = darkGreen,
+                    boxColor = paleWhiteGreen,
+                    modifier = Modifier.weight(1f)
+                )
+                FeatureBox(
+                    icon = Icons.Default.Group,
+                    text = "Team Up",
+                    iconColor = deepGreen,
+                    textColor = darkGreen,
+                    boxColor = paleWhiteGreen,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FeatureBox(
+                    icon = Icons.Default.Bolt,
+                    text = "Earn Energy",
+                    iconColor = deepGreen,
+                    textColor = darkGreen,
+                    boxColor = paleWhiteGreen,
+                    modifier = Modifier.weight(1f)
+                )
+                FeatureBox(
+                    icon = Icons.Default.EmojiEvents,
+                    text = "Win Badges",
+                    iconColor = deepGreen,
+                    textColor = darkGreen,
+                    boxColor = paleWhiteGreen,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        // --- Buttons ---
+        Button(
+            onClick = { navController.navigate("signin") },
+            interactionSource = interactionSource,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = backgroundColor,
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(28.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(50.dp)
+        ) {
+            Text("Sign in", fontWeight = FontWeight.Medium)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = { navController.navigate("signup") },
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.White,
+                contentColor = forestGreen
+            ),
+            shape = RoundedCornerShape(28.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(50.dp)
+        ) {
+            Text("Create an account", fontWeight = FontWeight.Medium)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "By continuing, you agree to sync your step data with Google Fit",
+            color = forestGreen.copy(alpha = 0.8f),
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
     }
 }
-
 
 @Composable
 fun FeatureBox(

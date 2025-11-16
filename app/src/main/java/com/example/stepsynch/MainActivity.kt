@@ -21,6 +21,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.stepsynch.screens.SignInScreen
 import com.example.stepsynch.screens.SignUpScreen
+import com.example.stepsynch.screens.OnboardScreen
+import com.example.stepsynch.screens.HomeScreen
+import com.example.stepsynch.screens.ChallengesScreen
+import com.example.stepsynch.screens.ProfileScreen
+import com.example.stepsynch.screens.FriendsScreen
+import com.example.stepsynch.screens.LeaderboardScreen
 import com.example.stepsynch.screens.WelcomeScreen
 import com.example.stepsynch.ui.theme.StepSynchTheme
 
@@ -43,10 +49,7 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = "welcome") {
         composable("welcome") {
-            // Pass a lambda to handle navigation when button is clicked
-            WelcomeScreen(
-                navController = navController
-            )
+            WelcomeScreen(navController = navController)
         }
         composable("signin") {
             SignInScreen(navController = navController)
@@ -54,6 +57,23 @@ fun AppNavigation() {
         composable("signup") {
             SignUpScreen(navController = navController)
         }
+        composable("onboarding") {
+            OnboardScreen(navController)
+        }
+        composable("home") {
+            HomeScreen(navController)
+        }
+        composable("challenges") {
+            ChallengesScreen(navController)
+        }
+        composable("profile") {
+            ProfileScreen(navController)
+        }
+        composable("friends") {
+            FriendsScreen(navController)
+        }
+        composable("leaderboard") {
+            LeaderboardScreen(navController)
+        }
     }
-
 }

@@ -26,14 +26,12 @@ import androidx.navigation.NavController
 @Composable
 fun SignUpScreen(navController: NavController) {
 
-    // 🌿 Shared color palette
     val lightestGreen = Color(0xFFEAF4E0)
     val forestGreen = Color(0xFF709255)
     val deepGreen = Color(0xFF3E5622)
     val darkGreen = Color(0xFF172815)
     val paleWhiteGreen = Color(0xFFF6FAF2)
 
-    // 🧠 Input state
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -57,16 +55,14 @@ fun SignUpScreen(navController: NavController) {
             )
         }
 
-        // 🌱 Main content
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 64.dp)
+                .padding(top = 40.dp)
         ) {
 
-            // 👣 Circular walking icon
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -83,7 +79,6 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🔠 Title
             Text(
                 text = "Create Account",
                 color = deepGreen,
@@ -101,7 +96,6 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🧾 Custom-labeled input fields
             InputField(label = "Full Name", value = fullName, onValueChange = { fullName = it }, forestGreen, paleWhiteGreen)
             InputField(label = "Email", value = email, onValueChange = { email = it }, forestGreen, paleWhiteGreen, KeyboardType.Email)
             InputField(label = "Password", value = password, onValueChange = { password = it }, forestGreen, paleWhiteGreen, isPassword = true)
@@ -109,9 +103,8 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // 🟩 Create Account Button
             Button(
-                onClick = { /* TODO: Sign up action */ },
+                onClick = { navController.navigate("onboarding") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = deepGreen,
                     contentColor = Color.White
