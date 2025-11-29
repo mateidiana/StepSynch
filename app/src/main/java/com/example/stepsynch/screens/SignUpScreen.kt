@@ -25,7 +25,7 @@ import androidx.navigation.NavController
 import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun SignUpScreen(navController: NavController, authRepository: AuthRepository = AuthRepository()) {
+fun SignUpScreen(navController: NavController, authRepository: AuthRepository) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

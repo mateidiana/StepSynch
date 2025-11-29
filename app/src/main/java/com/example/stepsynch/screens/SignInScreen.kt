@@ -23,10 +23,7 @@ import androidx.navigation.NavController
 import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun SignInScreen(
-    navController: NavController,
-    authRepository: AuthRepository = AuthRepository()
-) {
+fun SignInScreen(navController: NavController, authRepository: AuthRepository) {
     val lightestGreen = Color(0xFFEAF4E0)
     val forestGreen = Color(0xFF709255)
     val deepGreen = Color(0xFF3E5622)

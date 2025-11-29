@@ -13,9 +13,51 @@ class AuthRepository {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
-    val currentUser = _currentUser.asStateFlow() // expose as read-only
+    val currentUser = _currentUser.asStateFlow()
+
+    init {
+        auth.addAuthStateListener { firebaseAuth ->
+            _currentUser.value = firebaseAuth.currentUser
+        }
+    }
 
     // Sign up with email & password
+//    fun signUp(
+//        email: String,
+//        password: String,
+//        username: String,
+//        onResult: (Boolean, String?) -> Unit
+//    ) {
+//        auth.createUserWithEmailAndPassword(email, password)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    val firebaseUser = auth.currentUser
+////                    _currentUser.value = firebaseUser
+//
+//                    // Create user in Firestore
+//                    val user = User(
+//                        uid = firebaseUser?.uid ?: "",
+//                        email = email,
+//                        username = username
+//                    )
+//
+//                    firebaseUser?.uid?.let { uid ->
+//                        firestore.collection("users")
+//                            .document(uid)
+//                            .set(user)
+//                            .addOnSuccessListener {
+//                                onResult(true, null)
+//                            }
+//                            .addOnFailureListener { e ->
+//                                onResult(false, e.localizedMessage)
+//                            }
+//                    }
+//                } else {
+//                    onResult(false, task.exception?.localizedMessage)
+//                }
+//            }
+//    }
+
     fun signUp(
         email: String,
         password: String,
@@ -25,10 +67,14 @@ class AuthRepository {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val firebaseUser = auth.currentUser
-//                    _currentUser.value = firebaseUser
 
-                    // Create user in Firestore
+                    val firebaseUser = auth.currentUser
+                    _currentUser.value = firebaseUser
+
+                    // Immediately notify UI to continue (navigation, stop loading, etc.)
+                    onResult(true, null)
+
+                    // Prepare Firestore user data
                     val user = User(
                         uid = firebaseUser?.uid ?: "",
                         email = email,
@@ -39,18 +85,18 @@ class AuthRepository {
                         firestore.collection("users")
                             .document(uid)
                             .set(user)
-                            .addOnSuccessListener {
-                                onResult(true, null)
-                            }
                             .addOnFailureListener { e ->
-                                onResult(false, e.localizedMessage)
+                                // Optional: log error
+                                println("Firestore user create FAILED: ${e.message}")
                             }
                     }
+
                 } else {
                     onResult(false, task.exception?.localizedMessage)
                 }
             }
     }
+
 
     // Login with email & password
     fun login(
@@ -61,7 +107,7 @@ class AuthRepository {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _currentUser.value = auth.currentUser
+                    //_currentUser.value = auth.currentUser
                     onResult(true, null)
                 } else {
                     onResult(false, task.exception?.localizedMessage)

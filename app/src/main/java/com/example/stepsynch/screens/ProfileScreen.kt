@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,22 +34,20 @@ import com.example.stepsynch.repository.AuthRepository
 
 @Composable
 fun ProfileScreen(navController: NavController, authRepository: AuthRepository) {
-
+    val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        val currentUser = authRepository.currentUser.value
+    LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
             authRepository.getUser(uid) { user ->
-                username = user?.username // set username from Firestore
+                username = user?.username
             }
         }
     }
 
-    // --- Sample Data ---
-    val userStats = remember {
-        object {
-            val name = "Your Profile"
+    val userStats = object {
+
+            val name = username ?: "null"
             val initials = "PIC"
             val level = 12
             val totalSteps = 345_678
@@ -57,7 +56,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
             val rank = 3
             val joinedDate = "Sep 15, 2025"
             val teamName = "The Steppers"
-        }
+
     }
 
     val earnedBadges = remember {

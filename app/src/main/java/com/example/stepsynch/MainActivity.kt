@@ -60,16 +60,16 @@ fun AppNavigation() {
             WelcomeScreen(navController = navController)
         }
         composable("signin") {
-            SignInScreen(navController = navController)
+            SignInScreen(navController = navController, authRepository)
         }
         composable("signup") {
-            SignUpScreen(navController = navController)
+            SignUpScreen(navController = navController, authRepository)
         }
         composable("onboarding") {
             OnboardScreen(navController, authRepository)
         }
         composable("home") {
-            HomeScreen(navController)
+            HomeScreen(navController, authRepository)
         }
         composable("challenges") {
             ChallengesScreen(navController)

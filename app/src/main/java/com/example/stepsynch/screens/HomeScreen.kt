@@ -40,14 +40,14 @@ import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
 
 @Composable
-fun HomeScreen(navController: NavController, authRepository: AuthRepository = AuthRepository()) {
+fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
+    val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        val currentUser = authRepository.currentUser.value
+    LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
             authRepository.getUser(uid) { user ->
-                username = user?.username // set username from Firestore
+                username = user?.username
             }
         }
     }
@@ -103,7 +103,6 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository = Au
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Welcome back!", color = Color(0x993E5622))
                 Text(
-//                    "Mock Username",
                     username ?: "User",
                     color = Color(0xFF172815),
                     fontSize = 20.sp,
@@ -128,12 +127,10 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository = Au
         // Main Content
         Column(
             modifier = Modifier
-//                .fillMaxSize()
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-//                .padding(horizontal = 24.dp, vertical = 16.dp),
                 .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp) // more spacing between sections
+            verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
 
             // Daily Steps Card
