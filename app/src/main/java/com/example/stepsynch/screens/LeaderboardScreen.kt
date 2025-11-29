@@ -40,11 +40,11 @@ fun LeaderboardScreen(navController: NavController) {
         listOf(
             LeaderboardUser(1, 1, "Sarah Chen", "SC", 15234, 1523, "up", "+2", streak = 12),
             LeaderboardUser(2, 2, "Mike Johnson", "MJ", 14876, 1487, "same", "0", streak = 8),
-            LeaderboardUser(3, 3, "Alex Thompson", "AT", 12543, 1254, "up", "+1", isCurrentUser = true, streak = 7),
-            LeaderboardUser(4, 4, "Emma Davis", "ED", 11234, 1123, "down", "-1", streak = 15),
-            LeaderboardUser(5, 5, "James Wilson", "JW", 10987, 1098, "same", "0", streak = 5),
-            LeaderboardUser(6, 6, "Lisa Anderson", "LA", 9876, 987, "up", "+2", streak = 9),
-            LeaderboardUser(7, 7, "Tom Brown", "TB", 8234, 823, "down", "-3", streak = 3),
+//            LeaderboardUser(3, 3, "Alex Thompson", "AT", 12543, 1254, "up", "+1", isCurrentUser = true, streak = 7),
+            LeaderboardUser(4, 3, "Emma Davis", "ED", 11234, 1123, "down", "-1", streak = 15),
+            LeaderboardUser(5, 4, "James Wilson", "JW", 10987, 1098, "same", "0", streak = 5),
+            LeaderboardUser(6, 5, "Lisa Anderson", "LA", 9876, 987, "up", "+2", streak = 9),
+            LeaderboardUser(7, 6, "Tom Brown", "TB", 8234, 823, "down", "-3", streak = 3),
         )
     }
 
@@ -52,9 +52,9 @@ fun LeaderboardScreen(navController: NavController) {
         listOf(
             LeaderboardUser(1, 1, "Sarah Chen", "SC", 89234, 8923, avgDaily = 12748, streak = 12),
             LeaderboardUser(2, 2, "Emma Davis", "ED", 82543, 8254, avgDaily = 11792, streak = 15),
-            LeaderboardUser(3, 3, "Alex Thompson", "AT", 78234, 7823, avgDaily = 11176, isCurrentUser = true, streak = 7),
-            LeaderboardUser(4, 4, "Mike Johnson", "MJ", 75432, 7543, avgDaily = 10776, streak = 8),
-            LeaderboardUser(5, 5, "Lisa Anderson", "LA", 68234, 6823, avgDaily = 9748, streak = 9)
+            //LeaderboardUser(3, 3, "Alex Thompson", "AT", 78234, 7823, avgDaily = 11176, isCurrentUser = true, streak = 7),
+            LeaderboardUser(4, 3, "Mike Johnson", "MJ", 75432, 7543, avgDaily = 10776, streak = 8),
+            LeaderboardUser(5, 4, "Lisa Anderson", "LA", 68234, 6823, avgDaily = 9748, streak = 9)
         )
     }
 
@@ -201,10 +201,10 @@ fun LeaderboardList(users: List<LeaderboardUser>) {
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(user.name, fontWeight = FontWeight.Bold, color = Color(0xFF172815))
-                            if (user.isCurrentUser) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("You", color = Color.White, modifier = Modifier.background(Color(0xFF3E5622), RoundedCornerShape(4.dp)).padding(2.dp))
-                            }
+//                            if (user.isCurrentUser) {
+//                                Spacer(modifier = Modifier.width(4.dp))
+//                                Text("You", color = Color.White, modifier = Modifier.background(Color(0xFF3E5622), RoundedCornerShape(4.dp)).padding(2.dp))
+//                            }
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text("${user.steps} steps", color = Color(0xFF3E5622).copy(alpha = 0.7f))

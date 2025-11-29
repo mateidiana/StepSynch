@@ -75,7 +75,7 @@ fun AppNavigation() {
             ChallengesScreen(navController)
         }
         composable("profile") {
-            ProfileScreen(navController)
+            ProfileScreen(navController, authRepository)
         }
         composable("friends") {
             FriendsScreen(navController)

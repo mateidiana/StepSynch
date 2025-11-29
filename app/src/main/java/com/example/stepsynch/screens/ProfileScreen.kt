@@ -13,7 +13,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,15 +29,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, authRepository: AuthRepository) {
+
+    var username by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        val currentUser = authRepository.currentUser.value
+        currentUser?.uid?.let { uid ->
+            authRepository.getUser(uid) { user ->
+                username = user?.username // set username from Firestore
+            }
+        }
+    }
 
     // --- Sample Data ---
     val userStats = remember {
         object {
-            val name = "Alex Thompson"
-            val initials = "AT"
+            val name = "Your Profile"
+            val initials = "PIC"
             val level = 12
             val totalSteps = 345_678
             val totalEnergy = 34_567
