@@ -272,29 +272,6 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository = Au
                     }
                 }
             }
-
-            // Quick Actions
-//            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-//                GradientButton(
-//                    text = "Explore Map",
-//                    icon = Icons.Default.Map,
-//                    gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
-//                    modifier = Modifier.weight(1f)
-//                )
-//                OutlinedButton(
-//                    onClick = { /* TODO */ },
-//                    modifier = Modifier.weight(1f),
-//                    colors = ButtonDefaults.outlinedButtonColors(
-//                        containerColor = Color.White,
-//                        contentColor = Color(0xFF3E5622)
-//                    ),
-//                    shape = RoundedCornerShape(12.dp)
-//                ) {
-//                    Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(20.dp))
-//                    Spacer(modifier = Modifier.width(6.dp))
-//                    Text("View Friends")
-//                }
-//            }
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
