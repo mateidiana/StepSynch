@@ -1,11 +1,13 @@
 package com.example.stepsynch.repository
 
+import UserStats
 import com.example.stepsynch.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.text.get
 
 class AuthRepository {
 
@@ -80,7 +82,12 @@ class AuthRepository {
                         email = email,
                         username = username
                     )
-
+                    val defaultStats = mapOf(
+                        "currentSteps" to 0,
+                        "dailyGoal" to 10000,
+                        "currentEnergy" to 0,
+                        "streak" to 0
+                    )
                     firebaseUser?.uid?.let { uid ->
                         firestore.collection("users")
                             .document(uid)
@@ -89,7 +96,16 @@ class AuthRepository {
                                 // Optional: log error
                                 println("Firestore user create FAILED: ${e.message}")
                             }
+                        firestore.collection("users")
+                            .document(uid)
+                            .collection("stats")
+                            .document("current")
+                            .set(defaultStats)
+                            .addOnFailureListener { e ->
+                                println("Firestore stats create FAILED: ${e.message}")
+                            }
                     }
+
 
                 } else {
                     onResult(false, task.exception?.localizedMessage)
@@ -131,5 +147,21 @@ class AuthRepository {
                 onResult(null)
             }
     }
+
+    fun getUserStats(uid: String, onResult: (UserStats?) -> Unit) {
+        firestore.collection("users")
+            .document(uid)
+            .collection("stats")
+            .document("current")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val stats = snapshot.toObject(UserStats::class.java)
+                onResult(stats)
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
 }
 

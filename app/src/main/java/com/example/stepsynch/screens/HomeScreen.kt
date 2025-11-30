@@ -43,20 +43,31 @@ import kotlin.math.roundToInt
 fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
+    var currentSteps by remember { mutableStateOf(0) }
+    var dailyGoal by remember { mutableStateOf(10000) }
+    var currentEnergy by remember { mutableStateOf(0) }
+    var streak by remember { mutableStateOf(0) }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
             authRepository.getUser(uid) { user ->
                 username = user?.username
             }
+            authRepository.getUserStats(uid) { stats ->
+                stats?.let {
+                    currentSteps = it.steps
+                    dailyGoal = it.dailyGoal
+                    currentEnergy = it.energy
+                    streak = it.streak
+                }
+            }
         }
+
     }
 
-    val dailyGoal = 10000
-    val currentSteps = 8234
+
     val stepProgress = (currentSteps / dailyGoal.toFloat()) * 100
-    val currentEnergy = 2450
-    val streak = 7
+
 
     val quickStats = listOf(
         QuickStat("Weekly Avg", "9,450", Icons.Default.TrendingUp, Color(0xFF709255)),
