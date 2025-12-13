@@ -30,6 +30,7 @@ import com.example.stepsynch.screens.ProfileScreen
 import com.example.stepsynch.screens.FriendsScreen
 import com.example.stepsynch.screens.LeaderboardScreen
 import com.example.stepsynch.screens.WelcomeScreen
+import com.example.stepsynch.screens.map.MapExplorationScreen
 import com.example.stepsynch.ui.theme.StepSynchTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -82,6 +83,9 @@ fun AppNavigation() {
         }
         composable("leaderboard") {
             LeaderboardScreen(navController)
+        }
+        composable("map") {
+            MapExplorationScreen(navController)
         }
     }
 }

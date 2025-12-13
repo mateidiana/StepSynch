@@ -280,7 +280,7 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                         icon = Icons.Default.Map,
                         gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
                         modifier = Modifier.weight(1f),
-                        onClick = { /*TO DO*/ }
+                        onClick = { navController.navigate("map") }
                     )
                     GradientButton(
                         text = "View Profile",
