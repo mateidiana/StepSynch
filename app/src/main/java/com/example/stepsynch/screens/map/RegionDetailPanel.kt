@@ -32,7 +32,8 @@ import com.example.stepsynch.models.RegionType
 fun RegionDetailPanel(
     region: Region,
     energy: Int,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onStartExploring: (Region) -> Unit
 ) {
     val deepGreen = Color(0xFF3E5622)
     val darkGreen = Color(0xFF172815)
@@ -107,7 +108,7 @@ fun RegionDetailPanel(
 
             // ─── Action button ───────────────────────
             Button(
-                onClick = { /* start exploring */ },
+                onClick = { onStartExploring(region)  },
                 enabled = energy >= region.energyCost,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -17,9 +17,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.stepsynch.repository.AuthRepository
 import com.example.stepsynch.screens.SignInScreen
 import com.example.stepsynch.screens.SignUpScreen
@@ -31,6 +33,7 @@ import com.example.stepsynch.screens.FriendsScreen
 import com.example.stepsynch.screens.LeaderboardScreen
 import com.example.stepsynch.screens.WelcomeScreen
 import com.example.stepsynch.screens.map.MapExplorationScreen
+import com.example.stepsynch.screens.mapDetail.MapDetailViewScreen
 import com.example.stepsynch.ui.theme.StepSynchTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -87,5 +90,16 @@ fun AppNavigation() {
         composable("map") {
             MapExplorationScreen(navController)
         }
+        composable(
+            route = "mapDetail/{regionId}",
+            arguments = listOf(navArgument("regionId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val regionId = backStackEntry.arguments?.getInt("regionId")!!
+            MapDetailViewScreen(
+                navController = navController,
+                regionId = regionId
+            )
+        }
+
     }
 }
