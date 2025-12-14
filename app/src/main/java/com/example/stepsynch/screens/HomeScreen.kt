@@ -55,9 +55,9 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
             }
             authRepository.getUserStats(uid) { stats ->
                 stats?.let {
-                    currentSteps = it.steps
+                    currentSteps = it.currentSteps
                     dailyGoal = it.dailyGoal
-                    currentEnergy = it.energy
+                    currentEnergy = it.currentEnergy
                     streak = it.streak
                 }
             }
