@@ -40,7 +40,7 @@ import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
 
 @Composable
-fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
+fun HomeScreen(navController: NavController, authRepository: AuthRepository, onConnectGoogleFit: () -> Unit ) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
     var currentSteps by remember { mutableStateOf(0) }
