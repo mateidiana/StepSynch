@@ -49,6 +49,9 @@ fun MapExplorationScreen(
                     if (region.id == 2) { // Riverside Trail
                         navController.navigate("mapDetail/${region.id}")
                     }
+                    if (region.id == 3) { // Downtown Plaza
+                        navController.navigate("mapDetailD/${region.id}")
+                    }
                 }
             )
         }
