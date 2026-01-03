@@ -58,6 +58,9 @@ fun MapExplorationScreen(
                     if (region.id == 5) { // City Center
                         navController.navigate("mapDetailC/${region.id}")
                     }
+                    if (region.id == 6) { // Forest Grove
+                        navController.navigate("mapDetailF/${region.id}")
+                    }
                 }
             )
         }
