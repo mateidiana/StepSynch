@@ -55,6 +55,9 @@ fun MapExplorationScreen(
                     if (region.id == 4) { // Mountain Path
                         navController.navigate("mapDetailM/${region.id}")
                     }
+                    if (region.id == 5) { // City Center
+                        navController.navigate("mapDetailC/${region.id}")
+                    }
                 }
             )
         }
