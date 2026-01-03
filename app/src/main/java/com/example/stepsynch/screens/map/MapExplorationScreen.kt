@@ -52,6 +52,9 @@ fun MapExplorationScreen(
                     if (region.id == 3) { // Downtown Plaza
                         navController.navigate("mapDetailD/${region.id}")
                     }
+                    if (region.id == 4) { // Mountain Path
+                        navController.navigate("mapDetailM/${region.id}")
+                    }
                 }
             )
         }
