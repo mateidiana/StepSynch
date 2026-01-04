@@ -67,6 +67,9 @@ fun MapExplorationScreen(
                     if (region.id == 8) { // Sky Gardens
                         navController.navigate("mapDetailS/${region.id}")
                     }
+                    if (region.id == 9) { // Ancient Ruins
+                        navController.navigate("mapDetailA/${region.id}")
+                    }
                 }
             )
         }
