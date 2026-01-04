@@ -64,6 +64,9 @@ fun MapExplorationScreen(
                     if (region.id == 7) { // Harbor District
                         navController.navigate("mapDetailH/${region.id}")
                     }
+                    if (region.id == 8) { // Sky Gardens
+                        navController.navigate("mapDetailS/${region.id}")
+                    }
                 }
             )
         }
