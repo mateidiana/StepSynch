@@ -61,6 +61,9 @@ fun MapExplorationScreen(
                     if (region.id == 6) { // Forest Grove
                         navController.navigate("mapDetailF/${region.id}")
                     }
+                    if (region.id == 7) { // Harbor District
+                        navController.navigate("mapDetailH/${region.id}")
+                    }
                 }
             )
         }

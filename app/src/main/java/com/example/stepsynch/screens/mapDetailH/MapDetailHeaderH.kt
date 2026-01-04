@@ -1,4 +1,4 @@
-package com.example.stepsynch.screens.mapDetailF
+package com.example.stepsynch.screens.mapDetailH
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -24,7 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Brush
 
 @Composable
-fun MapDetailHeaderF(
+fun MapDetailHeaderH (
     progress: Int,
     energy: Int,
     onBack: () -> Unit
@@ -49,9 +49,9 @@ fun MapDetailHeaderF(
             }
 
             Column {
-                Text("Forest Grove", fontWeight = FontWeight.Bold)
+                Text("Harbour District", fontWeight = FontWeight.Bold)
                 Text(
-                    "Nature Region",
+                    "City Region",
                     color = Color(0xFF3E5622).copy(alpha = 0.7f)
                 )
             }

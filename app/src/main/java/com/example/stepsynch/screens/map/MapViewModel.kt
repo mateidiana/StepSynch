@@ -22,9 +22,9 @@ class MapViewModel : ViewModel(){
         Region(5, "City Center", 1500, 20000, RegionType.CITY, RegionStatus.UNLOCKED, 0, 0.30f, 0.40f),
         Region(6, "Forest Grove", 1500, 20000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.50f, 0.40f),
         Region(7, "Harbor District", 2000, 30000, RegionType.CITY, RegionStatus.UNLOCKED, 0, 0.70f, 0.40f),
-        Region(8, "Sky Gardens", 2500, 50000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.35f, 0.25f),
-        Region(9, "Ancient Ruins", 3000, 75000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.65f, 0.25f),
-        Region(10, "Summit Peak", 5000, 100000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.50f, 0.10f)
+        Region(8, "Sky Gardens", 2000, 50000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.35f, 0.25f),
+        Region(9, "Ancient Ruins", 2000, 75000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.65f, 0.25f),
+        Region(10, "Summit Peak", 2000, 100000, RegionType.NATURE, RegionStatus.UNLOCKED, 0, 0.50f, 0.10f)
     )
 
     fun selectRegion(region: Region) {
