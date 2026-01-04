@@ -46,6 +46,9 @@ fun MapExplorationScreen(
                 energy = energy,
                 onClose = viewModel::clearSelection,
                 onStartExploring = { region ->
+                    if (region.id == 1) { // Welcome Park
+                        navController.navigate("mapDetailW/${region.id}")
+                    }
                     if (region.id == 2) { // Riverside Trail
                         navController.navigate("mapDetail/${region.id}")
                     }
