@@ -70,6 +70,9 @@ fun MapExplorationScreen(
                     if (region.id == 9) { // Ancient Ruins
                         navController.navigate("mapDetailA/${region.id}")
                     }
+                    if (region.id == 10) { // Summit Peak
+                        navController.navigate("mapDetailP/${region.id}")
+                    }
                 }
             )
         }

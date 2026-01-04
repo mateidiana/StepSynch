@@ -41,6 +41,7 @@ import com.example.stepsynch.screens.mapDetailF.MapDetailViewScreenF
 import com.example.stepsynch.screens.mapDetailH.MapDetailViewScreenH
 import com.example.stepsynch.screens.mapDetailS.MapDetailViewScreenS
 import com.example.stepsynch.screens.mapDetailA.MapDetailViewScreenA
+import com.example.stepsynch.screens.mapDetailP.MapDetailViewScreenP
 import com.example.stepsynch.ui.theme.StepSynchTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -173,6 +174,16 @@ fun AppNavigation() {
         ) { backStackEntry ->
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenA(
+                navController = navController,
+                regionId = regionId
+            )
+        }
+        composable(
+            route = "mapDetailP/{regionId}",
+            arguments = listOf(navArgument("regionId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val regionId = backStackEntry.arguments?.getInt("regionId")!!
+            MapDetailViewScreenP(
                 navController = navController,
                 regionId = regionId
             )
