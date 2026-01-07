@@ -1,6 +1,7 @@
 package com.example.stepsynch.repository
 
 import com.example.stepsynch.models.User
+import com.example.stepsynch.models.UserStatsGF
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -52,6 +53,24 @@ class AuthRepository {
                                 // Optional: log error
                                 println("Firestore user create FAILED: ${e.message}")
                             }
+                        val stats = UserStatsGF(
+                            id = uid,
+                            stepCountToday = 8500,
+                            dailyStepGoal = 10000,
+                            streak = 5,
+                            caloriesToday = 230,
+                            distanceToday = 5.5,
+                            weeklyAverage = 9130,
+                            stepCountThisWeek = 30000,
+                            userUid = uid
+                        )
+
+                        firestore.collection("user_stats_gf")
+                            .document(uid)
+                            .set(stats)
+                            .addOnFailureListener { e ->
+                                println("Stats create FAILED: ${e.message}")
+                            }
                     }
 
                 } else {
@@ -94,5 +113,57 @@ class AuthRepository {
                 onResult(null)
             }
     }
+
+    fun getAllUsers(onResult: (List<User>) -> Unit) {
+        firestore.collection("users")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val users = snapshot.toObjects(User::class.java)
+                onResult(users)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
+    fun getUserStats(
+        uid: String,
+        onResult: (UserStatsGF?) -> Unit
+    ) {
+        firestore.collection("user_stats_gf")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.toObject(UserStatsGF::class.java))
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+    fun ensureUserStats(uid: String) {
+        val statsRef = firestore.collection("user_stats_gf").document(uid)
+
+        statsRef.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+
+                val stats = UserStatsGF(
+                    id = uid,
+                    stepCountToday = 8500,
+                    dailyStepGoal = 10000,
+                    streak = 5,
+                    caloriesToday = 230,
+                    distanceToday = 5.5,
+                    weeklyAverage = 9130,
+                    stepCountThisWeek = 30000,
+                    userUid = uid
+                )
+
+                statsRef.set(stats)
+            }
+        }
+    }
+
+
 }
 

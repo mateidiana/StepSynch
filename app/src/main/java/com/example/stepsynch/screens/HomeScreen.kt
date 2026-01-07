@@ -29,29 +29,45 @@ import androidx.compose.material.icons.filled.*
 import androidx.navigation.NavController
 import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
+import com.example.stepsynch.models.UserStatsGF
 
 @Composable
 fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
+    var stats by remember { mutableStateOf<UserStatsGF?>(null) }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
+            //authRepository.ensureUserStats(uid)
             authRepository.getUser(uid) { user ->
                 username = user?.username
+            }
+            authRepository.getUserStats(uid) { userStats ->
+                stats = userStats
             }
         }
     }
 
-    val dailyGoal = 10000
-    val currentSteps = 8234
-    val stepProgress = (currentSteps / dailyGoal.toFloat()) * 100
+    val dailyGoal = stats?.dailyStepGoal ?: 0
+    val currentSteps = stats?.stepCountToday ?: 0
+    //val stepProgress = (currentSteps / dailyGoal.toFloat()) * 100
+    val stepProgress =
+        if (dailyGoal > 0) {
+            (currentSteps / dailyGoal.toFloat()) * 100
+        } else {
+            0f
+        }
     val currentEnergy = 2450
-    val streak = 7
+    val streak = stats?.streak ?: 0
+    val weeklyAvg = stats?.weeklyAverage ?: 0
+    val thisWeek = stats?.stepCountThisWeek ?: 0
+    val calories = stats?.caloriesToday ?: 0
+    val distance = stats?.distanceToday ?: 0
 
     val quickStats = listOf(
-        QuickStat("Weekly Avg", "9,450", Icons.Default.TrendingUp, Color(0xFF709255)),
-        QuickStat("This Week", "58,234", Icons.Default.DirectionsWalk, Color(0xFF95B46A)),
+        QuickStat("Weekly Avg", weeklyAvg.toString(), Icons.Default.TrendingUp, Color(0xFF709255)),
+        QuickStat("This Week", thisWeek.toString(), Icons.Default.DirectionsWalk, Color(0xFF95B46A)),
         QuickStat("Active Challenges", "3", Icons.Default.Task, Color(0xFF83781B)),
         QuickStat("Badges Earned", "2", Icons.Default.EmojiEvents, Color(0xFF3E5622)),
     )
@@ -151,8 +167,8 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                     )
 
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        StatItem(label = "Calories", value = "245 kcal")
-                        StatItem(label = "Distance", value = "6.2 km")
+                        StatItem(label = "Calories", value = calories.toString())
+                        StatItem(label = "Distance", value = distance.toString())
 
                     }
                     Row(
