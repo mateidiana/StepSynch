@@ -2,6 +2,7 @@ package com.example.stepsynch.repository
 
 import com.example.stepsynch.models.User
 import com.example.stepsynch.models.UserStatsGF
+import com.example.stepsynch.models.UserStatsGame
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -71,6 +72,27 @@ class AuthRepository {
                             .addOnFailureListener { e ->
                                 println("Stats create FAILED: ${e.message}")
                             }
+
+                        getUserCount { userCount ->
+                            val gameStats = UserStatsGame(
+                                id = uid,
+                                energyPoints = 1000,
+                                rank = userCount,
+                                totalEnergyPoints = 1000,
+                                totalSteps = 8500,
+                                activeChallengesCount = 0,
+                                earnedBadgesCount = 0,
+                                userUid = uid
+                            )
+
+                            firestore.collection("user_stats_game")
+                                .document(uid)
+                                .set(gameStats)
+                                .addOnFailureListener { e ->
+                                    println("Game stats create FAILED: ${e.message}")
+                                }
+                        }
+
                     }
 
                 } else {
@@ -126,6 +148,17 @@ class AuthRepository {
             }
     }
 
+    private fun getUserCount(onResult: (Int) -> Unit) {
+        firestore.collection("users")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.size())
+            }
+            .addOnFailureListener {
+                onResult(0)
+            }
+    }
+
     fun getUserStats(
         uid: String,
         onResult: (UserStatsGF?) -> Unit
@@ -135,6 +168,21 @@ class AuthRepository {
             .get()
             .addOnSuccessListener { snapshot ->
                 onResult(snapshot.toObject(UserStatsGF::class.java))
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+    fun getUserGameStats(
+        uid: String,
+        onResult: (UserStatsGame?) -> Unit
+    ) {
+        firestore.collection("user_stats_game")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.toObject(UserStatsGame::class.java))
             }
             .addOnFailureListener {
                 onResult(null)
@@ -164,6 +212,28 @@ class AuthRepository {
         }
     }
 
+    fun ensureUserStatsGame(uid: String) {
+        val docRef = firestore.collection("user_stats_game").document(uid)
 
+        docRef.get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.exists()) {
+                    getUserCount { userCount ->
+                        val stats = UserStatsGame(
+                            id = uid,
+                            energyPoints = 1000,
+                            rank = userCount + 1,
+                            totalEnergyPoints = 1000,
+                            totalSteps = 8500,
+                            activeChallengesCount = 0,
+                            earnedBadgesCount = 0,
+                            userUid = uid
+                        )
+
+                        docRef.set(stats)
+                    }
+                }
+            }
+    }
 }
 

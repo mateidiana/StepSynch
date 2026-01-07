@@ -30,31 +30,52 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.stepsynch.models.UserStatsGF
+import com.example.stepsynch.models.UserStatsGame
 import com.example.stepsynch.repository.AuthRepository
 
 @Composable
 fun ProfileScreen(navController: NavController, authRepository: AuthRepository) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
+    var stats by remember { mutableStateOf<UserStatsGF?>(null) }
+    var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+
+    val creationDate = currentUser?.metadata?.creationTimestamp
+        ?.let { timestamp ->
+            java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+                .format(java.util.Date(timestamp))
+        }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
             authRepository.getUser(uid) { user ->
                 username = user?.username
             }
+            authRepository.getUserStats(uid) { userStats ->
+                stats = userStats
+            }
+            authRepository.getUserGameStats(uid) { userGameStats ->
+                gameStats = userGameStats
+            }
         }
     }
 
     val userStats = object {
 
-            val name = username ?: "null"
-            val initials = "PIC"
-            val totalSteps = 345_678
-            val totalEnergy = 34_567
-            val streak = 7
-            val rank = 3
-            val joinedDate = "Sep 15, 2025"
-            val teamName = "The Steppers"
+            val name = username ?: "Loading"
+            //val initials = "PIC"
+            val initials: String = username?.split(" ")?.filter { it.isNotEmpty() }
+                ?.map { it.first().uppercaseChar() }?.joinToString("")?.take(2)
+                ?: "??"
+            val totalSteps = gameStats?.totalSteps ?: 0
+            val totalEnergy = gameStats?.totalEnergyPoints ?: 0
+            val streak = stats?.streak ?: 0
+            val rank = gameStats?.rank ?: 0
+            val joinedDate = creationDate.toString()
+            val teamName = "No team yet"
+            val activeChallenges = gameStats?.activeChallengesCount ?: 0
+            val badgesEarned = gameStats?.earnedBadgesCount ?: 0
 
     }
 
@@ -192,8 +213,8 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                         val stat = when (index) {
                             0 -> Triple("Total Steps", userStats.totalSteps.toString(), Icons.Default.DirectionsWalk)
                             1 -> Triple("Total Energy", userStats.totalEnergy.toString(), Icons.Default.Bolt)
-                            2 -> Triple("Badges Earned", earnedBadges.size.toString(), Icons.Default.Star)
-                            else -> Triple("Active Challenges", "3", Icons.Default.EmojiEvents)
+                            2 -> Triple("Badges Earned", userStats.badgesEarned.toString(), Icons.Default.Star)
+                            else -> Triple("Active Challenges", userStats.activeChallenges.toString(), Icons.Default.EmojiEvents)
                         }
 
                         Card(
@@ -244,7 +265,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                         InfoRow("Member Since", userStats.joinedDate, Icons.Default.CalendarToday)
                         InfoRow("Team", userStats.teamName, Icons.Default.Group)
                         InfoRow("Current Streak", "${userStats.streak} days", Icons.Default.TrendingUp)
-                        InfoRow("Regions Explored", "3 / 10", Icons.Default.Place)
+                        InfoRow("Regions Explored", "1 / 10", Icons.Default.Place)
                     }
                 }
 

@@ -30,21 +30,28 @@ import androidx.navigation.NavController
 import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
 import com.example.stepsynch.models.UserStatsGF
+import com.example.stepsynch.models.UserStatsGame
 
 @Composable
 fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
+    var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
             //authRepository.ensureUserStats(uid)
+            //authRepository.ensureUserStatsGame(uid)
+
             authRepository.getUser(uid) { user ->
                 username = user?.username
             }
             authRepository.getUserStats(uid) { userStats ->
                 stats = userStats
+            }
+            authRepository.getUserGameStats(uid) { userGameStats ->
+                gameStats = userGameStats
             }
         }
     }
@@ -58,18 +65,20 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
         } else {
             0f
         }
-    val currentEnergy = 2450
+    val currentEnergy = gameStats?.energyPoints ?: 0
     val streak = stats?.streak ?: 0
     val weeklyAvg = stats?.weeklyAverage ?: 0
     val thisWeek = stats?.stepCountThisWeek ?: 0
     val calories = stats?.caloriesToday ?: 0
     val distance = stats?.distanceToday ?: 0
+    val activeChallenges = gameStats?.activeChallengesCount ?: 0
+    val earnedBadges = gameStats?.earnedBadgesCount ?: 0
 
     val quickStats = listOf(
         QuickStat("Weekly Avg", weeklyAvg.toString(), Icons.Default.TrendingUp, Color(0xFF709255)),
         QuickStat("This Week", thisWeek.toString(), Icons.Default.DirectionsWalk, Color(0xFF95B46A)),
-        QuickStat("Active Challenges", "3", Icons.Default.Task, Color(0xFF83781B)),
-        QuickStat("Badges Earned", "2", Icons.Default.EmojiEvents, Color(0xFF3E5622)),
+        QuickStat("Active Challenges", activeChallenges.toString(), Icons.Default.Task, Color(0xFF83781B)),
+        QuickStat("Badges Earned", earnedBadges.toString(), Icons.Default.EmojiEvents, Color(0xFF3E5622)),
     )
 
     val lightBackground = Brush.verticalGradient(listOf(Color(0xFFF8FAF6), Color(0x3395B46A)))
