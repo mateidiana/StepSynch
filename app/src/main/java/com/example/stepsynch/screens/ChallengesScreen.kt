@@ -56,19 +56,17 @@ fun ChallengesScreen(navController: NavController) {
                 target = 15000,
                 reward = "Bronze Medal",
                 badgeIcon = "🥉",
-                timeLeft = "2 days",
                 energyBonus = 500
             ),
             ChallengeType(
                 id = 2,
                 name = "Team Explorer",
-                description = "Complete 3 regions with your team",
+                description = "Join 2 teams",
                 type = "team",
                 progress = 1,
-                target = 3,
-                reward = "Team Explorer Badge",
+                target = 2,
+                reward = "Team Badge",
                 badgeIcon = "🗺️",
-                timeLeft = "5 days",
                 energyBonus = 1000
             ),
             ChallengeType(
@@ -80,7 +78,6 @@ fun ChallengesScreen(navController: NavController) {
                 target = 5000,
                 reward = "Early Bird Badge",
                 badgeIcon = "🌅",
-                timeLeft = "Today",
                 energyBonus = 300
             )
         )
@@ -98,7 +95,6 @@ fun ChallengesScreen(navController: NavController) {
                 reward = "Consistency Master",
                 badgeIcon = "⭐",
                 energyBonus = 2000,
-                participants = 1234
             ),
             AvailableChallenge(
                 id = 5,
@@ -110,19 +106,17 @@ fun ChallengesScreen(navController: NavController) {
                 reward = "Ultra Badge",
                 badgeIcon = "💎",
                 energyBonus = 5000,
-                participants = 89
             ),
             AvailableChallenge(
                 id = 6,
                 name = "Social Butterfly",
-                description = "Add 5 new friends this week",
+                description = "Add 5 new friends",
                 type = "social",
                 target = 5,
                 difficulty = "Easy",
                 reward = "Community Star",
                 badgeIcon = "🦋",
                 energyBonus = 800,
-                participants = 567
             )
         )
     }
@@ -253,7 +247,8 @@ fun ChallengesScreen(navController: NavController) {
                             midGreen = midGreen,
                             accentOlive = accentOlive,
                             titleDark = titleDark,
-                            muted = muted
+                            muted = muted,
+                            onCompleteClick = { /* TODO: join action */ }
                         )
                         1 -> AvailableTabContent(
                             items = availableChallenges,
@@ -315,7 +310,8 @@ private fun ActiveTabContent(
     midGreen: Color,
     accentOlive: Color,
     titleDark: Color,
-    muted: Color
+    muted: Color,
+    onCompleteClick: (ChallengeType) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -331,7 +327,8 @@ private fun ActiveTabContent(
                 midGreen = midGreen,
                 accentOlive = accentOlive,
                 titleDark = titleDark,
-                muted = muted
+                muted = muted,
+                onCompleteClick = onCompleteClick
             )
         }
     }
@@ -438,7 +435,8 @@ private fun ActiveChallengeCard(
     midGreen: Color,
     accentOlive: Color,
     titleDark: Color,
-    muted: Color
+    muted: Color,
+    onCompleteClick: (ChallengeType) -> Unit
 ) {
     val progressFraction = (challenge.progress.toFloat() / challenge.target.toFloat()).coerceIn(0f, 1f)
     Card(
@@ -466,7 +464,6 @@ private fun ActiveChallengeCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(challenge.name, color = titleDark, fontWeight = FontWeight.Bold)
-                        BadgeComposable(text = challenge.timeLeft, tint = accentOlive)
                     }
 
                     Text(challenge.description, color = muted, modifier = Modifier.padding(top = 6.dp))
@@ -505,6 +502,16 @@ private fun ActiveChallengeCard(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Icon(Icons.Default.Bolt, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
                     Text("+${challenge.energyBonus}", color = accentOlive)
+                }
+
+                Button(
+                    onClick = { onCompleteClick(challenge) },
+                    colors = ButtonDefaults.buttonColors(containerColor = primary, contentColor = Color.White),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .height(44.dp)
+                ) {
+                    Text("Claim Badge")
                 }
             }
         }
@@ -552,10 +559,6 @@ private fun AvailableChallengeCard(
                             Text(challenge.type.capitalize(), color = muted)
                         }
 
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.Group, contentDescription = null, tint = Color(0x993E5622), modifier = Modifier.size(16.dp))
-                            Text("${challenge.participants} joined", color = muted)
-                        }
                     }
                 }
             }
@@ -700,7 +703,6 @@ private data class ChallengeType(
     val target: Int,
     val reward: String,
     val badgeIcon: String,
-    val timeLeft: String,
     val energyBonus: Int
 )
 
@@ -713,8 +715,7 @@ private data class AvailableChallenge(
     val difficulty: String,
     val reward: String,
     val badgeIcon: String,
-    val energyBonus: Int,
-    val participants: Int
+    val energyBonus: Int
 )
 
 private data class CompletedChallenge(

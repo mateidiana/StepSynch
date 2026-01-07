@@ -1,12 +1,7 @@
 package com.example.stepsynch.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
@@ -26,13 +21,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.navigation.NavController
@@ -63,25 +54,6 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
         QuickStat("This Week", "58,234", Icons.Default.DirectionsWalk, Color(0xFF95B46A)),
         QuickStat("Active Challenges", "3", Icons.Default.Task, Color(0xFF83781B)),
         QuickStat("Badges Earned", "2", Icons.Default.EmojiEvents, Color(0xFF3E5622)),
-    )
-
-    val activeChallenges = listOf(
-        Challenge(
-            "Weekend Warrior",
-            "Walk 15,000 steps on Saturday",
-            progress = 8234,
-            target = 15000,
-            reward = "Bronze Medal",
-            timeLeft = "2 days left"
-        ),
-        Challenge(
-            "Team Explorer",
-            "Complete 3 regions with your team",
-            progress = 1,
-            target = 3,
-            reward = "Team Badge",
-            timeLeft = "5 days left"
-        )
     )
 
     val lightBackground = Brush.verticalGradient(listOf(Color(0xFFF8FAF6), Color(0x3395B46A)))
@@ -181,7 +153,68 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                         StatItem(label = "Calories", value = "245 kcal")
                         StatItem(label = "Distance", value = "6.2 km")
-                        StatItem(label = "Energy Earned", value = "+823", valueColor = Color(0xFF83781B))
+
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        val energyReward = dailyGoal / 10
+
+                        if (currentSteps < dailyGoal) {
+                            // --- Inactive button ---
+                            OutlinedButton(
+                                onClick = {},
+                                enabled = false,
+                                modifier = Modifier.height(40.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    disabledContentColor = Color(0xFF83781B)
+                                )
+                            ) {
+                                Text(
+                                    text = "Reach goal to earn ",
+                                    //text = energyReward.toString(),
+                                    color = Color(0xFF83781B)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = null,
+                                    tint = Color(0xFF83781B),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = energyReward.toString(),
+                                    color = Color(0xFF83781B),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            // --- Active button ---
+                            Button(
+                                onClick = {
+                                    // TODO: claim energy later
+                                },
+                                modifier = Modifier.height(40.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF83781B),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("Claim ")
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = energyReward.toString(),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -221,54 +254,6 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                 }
             }
 
-
-            // Active Challenges
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Active Challenges", fontWeight = FontWeight.Bold, color = Color(0xFF172815))
-                    Text("   View All", color = Color(0xFF3E5622), modifier = Modifier.clickable { navController.navigate("challenges") })
-                }
-
-                activeChallenges.forEach { challenge ->
-                    val progress = (challenge.progress.toFloat() / challenge.target) * 100
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                        Text(challenge.name, fontWeight = FontWeight.Bold, color = Color(0xFF172815))
-                                        Badge(text = challenge.timeLeft)
-                                    }
-                                    Text(challenge.description, color = Color(0x993E5622))
-                                }
-                            }
-
-                            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                Text("${challenge.progress} / ${challenge.target}", color = Color(0xFF3E5622))
-                                Text("${progress.roundToInt()}%", color = Color(0xFF709255))
-                            }
-
-                            LinearProgressIndicator(
-                                progress = progress / 100f,
-                                color = Color(0xFF709255),
-                                trackColor = Color(0x333E5622),
-                                modifier = Modifier
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                            )
-
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFF83781B))
-                                Text("Reward: ${challenge.reward}", color = Color(0xFF172815))
-                            }
-                        }
-                    }
-                }
-            }
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -319,7 +304,6 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                         onClick = { navController.navigate("challenges") }
 
                     )
-//                    Spacer(modifier = Modifier.weight(1f)) // empty space to balance the row
                 }
             }
 
@@ -389,4 +373,3 @@ fun GradientButton(text: String, icon: ImageVector, gradient: Brush, modifier: M
 
 // --- Data Classes ---
 data class QuickStat(val label: String, val value: String, val icon: ImageVector, val color: Color)
-data class Challenge(val name: String, val description: String, val progress: Int, val target: Int, val reward: String, val timeLeft: String)

@@ -49,7 +49,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
 
             val name = username ?: "null"
             val initials = "PIC"
-            val level = 12
             val totalSteps = 345_678
             val totalEnergy = 34_567
             val streak = 7
@@ -73,7 +72,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
         )
     }
 
-    val nextLevelProgress = 75f
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(Color(0xFFF8FAF6), Color(0xFF95B46A).copy(alpha = 0.1f))
@@ -96,7 +94,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp)
+                        .height(180.dp)
                         .background(
                             Brush.linearGradient(
                                 listOf(Color(0xFF3E5622), Color(0xFF709255))
@@ -157,12 +155,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
 
                                 Row {
                                     Badge(
-                                        backgroundColor = Color.White.copy(alpha = 0.2f),
-                                        textColor = Color.White,
-                                        text = "Level ${userStats.level}"
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Badge(
                                         backgroundColor = Color(0xFF83781B),
                                         textColor = Color.White,
                                         text = "Rank #${userStats.rank}",
@@ -179,36 +171,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                                 tint = Color.White
                             )
                         }
-                    }
-
-                    // Bottom: progress bar
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomStart)
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-
-                        Text(
-                            "Progress to Level ${userStats.level + 1}",
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 14.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        LinearProgressIndicator(
-                            progress = nextLevelProgress / 100f,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp),
-                            color = Color.White,
-                            trackColor = Color.White.copy(alpha = 0.2f)
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text("${nextLevelProgress.toInt()}%", color = Color.White)
                     }
                 }
 
@@ -368,7 +330,14 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                         .padding(horizontal = 16.dp)
                 ) {
                     Button(
-                        onClick = { },
+                        onClick = {
+                            authRepository.logout()
+
+                            navController.navigate("welcome") {
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = Color.White,
                             contentColor = Color(0xFF3E5622)
@@ -377,20 +346,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                     ) {
                         Icon(Icons.Default.TrackChanges, contentDescription = null)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Set Goals")
-                    }
-
-                    Button(
-                        onClick = { },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = Color.White,
-                            contentColor = Color(0xFF3E5622)
-                        ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.Settings, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Settings")
+                        Text("Log out")
                     }
                 }
 

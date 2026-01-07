@@ -21,43 +21,6 @@ class AuthRepository {
         }
     }
 
-    // Sign up with email & password
-//    fun signUp(
-//        email: String,
-//        password: String,
-//        username: String,
-//        onResult: (Boolean, String?) -> Unit
-//    ) {
-//        auth.createUserWithEmailAndPassword(email, password)
-//            .addOnCompleteListener { task ->
-//                if (task.isSuccessful) {
-//                    val firebaseUser = auth.currentUser
-////                    _currentUser.value = firebaseUser
-//
-//                    // Create user in Firestore
-//                    val user = User(
-//                        uid = firebaseUser?.uid ?: "",
-//                        email = email,
-//                        username = username
-//                    )
-//
-//                    firebaseUser?.uid?.let { uid ->
-//                        firestore.collection("users")
-//                            .document(uid)
-//                            .set(user)
-//                            .addOnSuccessListener {
-//                                onResult(true, null)
-//                            }
-//                            .addOnFailureListener { e ->
-//                                onResult(false, e.localizedMessage)
-//                            }
-//                    }
-//                } else {
-//                    onResult(false, task.exception?.localizedMessage)
-//                }
-//            }
-//    }
-
     fun signUp(
         email: String,
         password: String,
