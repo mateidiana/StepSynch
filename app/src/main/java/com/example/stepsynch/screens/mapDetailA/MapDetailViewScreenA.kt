@@ -29,7 +29,7 @@ fun MapDetailViewScreenA (
 ) {
     var energy by remember { mutableStateOf(2450) }
     var explorationProgress by remember { mutableStateOf(65) }
-    var collectedItems by remember { mutableStateOf(4) }
+    var collectedItems by remember { mutableStateOf(0) }
     val totalItems = 8
 
     var selectedLandmark by remember { mutableStateOf<Landmark?>(null) }
@@ -38,13 +38,13 @@ fun MapDetailViewScreenA (
     val landmarks = remember {
         mutableStateListOf(
             Landmark(1, "Broken Obelisk", false, 0.20f, 0.30f),
-            Landmark(2, "Crumbling Gate", true, 0.50f, 0.50f),
+            Landmark(2, "Crumbling Gate", false, 0.50f, 0.50f),
             Landmark(3, "Forgotten Altar", false, 0.70f, 0.25f),
             Landmark(4, "Mosaic Floor", false, 0.35f, 0.60f),
             Landmark(5, "Overgrown Library", false, 0.75f, 0.65f),
-            Landmark(6, "Pillar of Ages", true, 0.15f, 0.75f),
-            Landmark(7, "Sunken Courtyard", true, 0.50f, 0.15f),
-            Landmark(8, "Whispering Archway", true, 0.65f, 0.80f),
+            Landmark(6, "Pillar of Ages", false, 0.15f, 0.75f),
+            Landmark(7, "Sunken Courtyard", false, 0.50f, 0.15f),
+            Landmark(8, "Whispering Archway", false, 0.65f, 0.80f),
         )
     }
 

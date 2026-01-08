@@ -18,14 +18,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Box
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
 fun MapDetailViewScreen(
-    navController: NavController, regionId: Int
+    navController: NavController, regionId: Int, authRepository: AuthRepository
 ) {
     var energy by remember { mutableStateOf(2450) }
     var explorationProgress by remember { mutableStateOf(65) }
-    var collectedItems by remember { mutableStateOf(4) }
+    var collectedItems by remember { mutableStateOf(0) }
     val totalItems = 8
 
     var selectedLandmark by remember { mutableStateOf<Landmark?>(null) }
@@ -34,13 +35,13 @@ fun MapDetailViewScreen(
     val landmarks = remember {
         mutableStateListOf(
             Landmark(1, "Oak Tree", false, 0.20f, 0.30f),
-            Landmark(2, "Stone Bridge", true, 0.50f, 0.40f),
+            Landmark(2, "Stone Bridge", false, 0.50f, 0.40f),
             Landmark(3, "Lookout Point", false, 0.70f, 0.25f),
             Landmark(4, "Hidden Cave", false, 0.35f, 0.60f),
             Landmark(5, "Waterfall", false, 0.80f, 0.70f),
-            Landmark(6, "Ancient Oak", true, 0.15f, 0.75f),
-            Landmark(7, "Summit", true, 0.50f, 0.15f),
-            Landmark(8, "Crystal Lake", true, 0.65f, 0.80f),
+            Landmark(6, "Ancient Oak", false, 0.15f, 0.75f),
+            Landmark(7, "Summit", false, 0.50f, 0.15f),
+            Landmark(8, "Crystal Lake", false, 0.65f, 0.80f),
         )
     }
 

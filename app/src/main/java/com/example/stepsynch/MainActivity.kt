@@ -97,7 +97,7 @@ fun AppNavigation() {
             LeaderboardScreen(navController, authRepository)
         }
         composable("map") {
-            MapExplorationScreen(navController)
+            MapExplorationScreen(navController, authRepository)
         }
         composable(
             route = "mapDetail/{regionId}",
@@ -106,7 +106,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreen(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(

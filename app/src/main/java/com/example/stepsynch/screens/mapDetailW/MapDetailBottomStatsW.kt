@@ -30,8 +30,8 @@ fun MapDetailBottomStatsW(
         Row(modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center) {
             StatCard("Landmarks", "$collected/$total", Icons.Default.Star, Color(0xFF83781B))
-            StatCard("Energy", "+250", Icons.Default.Bolt, Color(0xFF83781B))
-            StatCard("Badge", "Bronze", Icons.Default.EmojiEvents, Color(0xFF83781B))
+            StatCard("Completed!", "+0", Icons.Default.Bolt, Color(0xFF83781B))
+            //StatCard("Badge", "Bronze", Icons.Default.EmojiEvents, Color(0xFF83781B))
         }
     }
 }

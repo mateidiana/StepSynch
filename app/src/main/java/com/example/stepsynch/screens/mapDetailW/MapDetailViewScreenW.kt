@@ -29,7 +29,7 @@ fun MapDetailViewScreenW (
 ) {
     var energy by remember { mutableStateOf(2450) }
     var explorationProgress by remember { mutableStateOf(65) }
-    var collectedItems by remember { mutableStateOf(4) }
+    var collectedItems by remember { mutableStateOf(8) }
     val totalItems = 8
 
     var selectedLandmark by remember { mutableStateOf<Landmark?>(null) }

@@ -12,10 +12,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
 fun MapExplorationScreen(
     navController: NavController,
+    authRepository: AuthRepository,
     viewModel: MapViewModel = viewModel()
 ) {
     val energy by viewModel.currentEnergy.collectAsState()

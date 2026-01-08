@@ -12,6 +12,8 @@ data class Region (
     val status: RegionStatus,
     val progress: Int,
     val x: Float,
-    val y: Float
+    val y: Float,
+    val teamRequired: Boolean,
+    val energyReward: Int
 )
 
