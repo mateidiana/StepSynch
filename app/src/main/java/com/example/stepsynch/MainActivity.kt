@@ -94,7 +94,7 @@ fun AppNavigation() {
             FriendsScreen(navController, authRepository)
         }
         composable("leaderboard") {
-            LeaderboardScreen(navController)
+            LeaderboardScreen(navController, authRepository)
         }
         composable("map") {
             MapExplorationScreen(navController)

@@ -189,6 +189,28 @@ class AuthRepository {
             }
     }
 
+    fun getAllUserStatsGF(onResult: (List<UserStatsGF>) -> Unit) {
+        firestore.collection("user_stats_gf")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.toObjects(UserStatsGF::class.java))
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
+    fun getAllUserStatsGame(onResult: (List<UserStatsGame>) -> Unit) {
+        firestore.collection("user_stats_game")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.toObjects(UserStatsGame::class.java))
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
     fun ensureUserStats(uid: String) {
         val statsRef = firestore.collection("user_stats_gf").document(uid)
 
