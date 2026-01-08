@@ -117,7 +117,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenD(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -127,7 +128,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenM(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -137,7 +139,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenC(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -147,7 +150,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenF(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -157,7 +161,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenH(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -167,7 +172,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenS(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -177,7 +183,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenA(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -187,7 +194,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenP(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
         composable(
@@ -197,7 +205,8 @@ fun AppNavigation() {
             val regionId = backStackEntry.arguments?.getInt("regionId")!!
             MapDetailViewScreenW(
                 navController = navController,
-                regionId = regionId
+                regionId = regionId,
+                authRepository
             )
         }
     }

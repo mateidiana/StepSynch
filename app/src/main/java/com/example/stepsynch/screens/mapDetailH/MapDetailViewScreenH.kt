@@ -18,6 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.example.stepsynch.models.UserStatsGame
+import com.example.stepsynch.repository.AuthRepository
 import com.example.stepsynch.screens.mapDetailH.LandmarkDetailDialogH
 import com.example.stepsynch.screens.mapDetailH.LandmarkNodeH
 import com.example.stepsynch.screens.mapDetailH.MapDetailBottomStatsH
@@ -26,9 +32,21 @@ import com.example.stepsynch.screens.mapDetailH.MapDetailHeaderH
 
 @Composable
 fun MapDetailViewScreenH(
-    navController: NavController, regionId: Int
+    navController: NavController, regionId: Int, authRepository: AuthRepository
 ) {
-    var energy by remember { mutableStateOf(2450) }
+    val currentUser by authRepository.currentUser.collectAsState()
+    var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+
+    LaunchedEffect(currentUser) {
+        currentUser?.uid?.let { uid ->
+            authRepository.getUserGameStats(uid) { userGameStats ->
+                gameStats = userGameStats
+            }
+        }
+    }
+
+    var energy = gameStats?.energyPoints ?: 0
+    //var energy by remember { mutableStateOf(2450) }
     var explorationProgress by remember { mutableStateOf(65) }
     var collectedItems by remember { mutableStateOf(0) }
     val totalItems = 8

@@ -85,7 +85,7 @@ fun LandmarkDetailDialogC(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Collect for 125")
+                        Text("Collect for 150")
                         Icon(
                             imageVector = Icons.Default.Bolt,
                             contentDescription = "Energy"

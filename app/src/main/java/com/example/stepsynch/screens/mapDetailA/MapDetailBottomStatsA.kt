@@ -31,7 +31,7 @@ fun MapDetailBottomStatsA(
             horizontalArrangement = Arrangement.Center) {
             StatCard("Landmarks", "$collected/$total", Icons.Default.Star, Color(0xFF83781B))
             StatCard("Complete to gain", "+250", Icons.Default.Bolt, Color(0xFF83781B))
-            //StatCard("Badge", "Bronze", Icons.Default.EmojiEvents, Color(0xFF83781B))
+            //StatCard("Required", "Team member", Icons.Default.EmojiEvents, Color(0xFF83781B))
         }
     }
 }

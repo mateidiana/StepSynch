@@ -5,13 +5,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.stepsynch.models.UserStatsGF
+import com.example.stepsynch.models.UserStatsGame
 import com.example.stepsynch.repository.AuthRepository
 
 @Composable
@@ -20,8 +26,25 @@ fun MapExplorationScreen(
     authRepository: AuthRepository,
     viewModel: MapViewModel = viewModel()
 ) {
-    val energy by viewModel.currentEnergy.collectAsState()
-    val steps by viewModel.todaySteps.collectAsState()
+    val currentUser by authRepository.currentUser.collectAsState()
+    var stats by remember { mutableStateOf<UserStatsGF?>(null) }
+    var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+
+    LaunchedEffect(currentUser) {
+        currentUser?.uid?.let { uid ->
+            authRepository.getUserStats(uid) { userStats ->
+                stats = userStats
+            }
+            authRepository.getUserGameStats(uid) { userGameStats ->
+                gameStats = userGameStats
+            }
+        }
+    }
+
+    val steps = stats?.stepCountToday ?: 0
+    val energy = gameStats?.energyPoints ?: 0
+    //val energy by viewModel.currentEnergy.collectAsState()
+    //val steps by viewModel.todaySteps.collectAsState()
     val selectedRegion by viewModel.selectedRegion.collectAsState()
 
     Column(

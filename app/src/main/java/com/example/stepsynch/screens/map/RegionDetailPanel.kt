@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.NordicWalking
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -102,6 +103,15 @@ fun RegionDetailPanel(
                     icon = Icons.Default.NordicWalking,
                     iconColor = deepGreen
                 )
+
+                if (region.teamRequired){
+                    StatCard(
+                        label = "Required",
+                        value = "Team",
+                        icon = Icons.Default.Star,
+                        iconColor = deepGreen
+                    )
+                }
             }
 
             Spacer(Modifier.height(24.dp))
