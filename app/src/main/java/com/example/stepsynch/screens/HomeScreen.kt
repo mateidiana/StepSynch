@@ -43,6 +43,8 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
         currentUser?.uid?.let { uid ->
             //authRepository.ensureUserStats(uid)
             //authRepository.ensureUserStatsGame(uid)
+            //authRepository.ensureAddedLandmark(uid)
+            //authRepository.ensureCompletedRegion(uid)
 
             authRepository.getUser(uid) { user ->
                 username = user?.username

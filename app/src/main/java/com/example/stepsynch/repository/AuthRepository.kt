@@ -3,6 +3,8 @@ package com.example.stepsynch.repository
 import com.example.stepsynch.models.User
 import com.example.stepsynch.models.UserStatsGF
 import com.example.stepsynch.models.UserStatsGame
+import com.example.stepsynch.models.AddedLandmark
+import com.example.stepsynch.models.CompletedRegion
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -92,6 +94,24 @@ class AuthRepository {
                                     println("Game stats create FAILED: ${e.message}")
                                 }
                         }
+                        // 🔹 Added Landmark (initial)
+                        val addedLandmark = AddedLandmark(
+                            regionId = 1,
+                            landmarkId = 1,
+                            userUid = uid
+                        )
+
+                        firestore.collection("added_landmark")
+                            .add(addedLandmark)
+
+                        // 🔹 Completed Region (initial)
+                        val completedRegion = CompletedRegion(
+                            regionId = 1,
+                            userUid = uid
+                        )
+
+                        firestore.collection("completed_region")
+                            .add(completedRegion)
 
                     }
 
@@ -211,6 +231,18 @@ class AuthRepository {
             }
     }
 
+    fun getCompletedRegionCount(uid: String, onResult: (Int) -> Unit) {
+        firestore.collection("completed_region")
+            .whereEqualTo("userUid", uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onResult(snapshot.size())
+            }
+            .addOnFailureListener {
+                onResult(0)
+            }
+    }
+
     fun ensureUserStats(uid: String) {
         val statsRef = firestore.collection("user_stats_gf").document(uid)
 
@@ -257,5 +289,42 @@ class AuthRepository {
                 }
             }
     }
+
+    fun ensureAddedLandmark(uid: String) {
+        firestore.collection("added_landmark")
+            .whereEqualTo("userUid", uid)
+            .whereEqualTo("regionId", 1)
+            .whereEqualTo("landmarkId", 1)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.isEmpty) {
+                    val entry = AddedLandmark(
+                        regionId = 1,
+                        landmarkId = 1,
+                        userUid = uid
+                    )
+
+                    firestore.collection("added_landmark").add(entry)
+                }
+            }
+    }
+
+    fun ensureCompletedRegion(uid: String) {
+        firestore.collection("completed_region")
+            .whereEqualTo("userUid", uid)
+            .whereEqualTo("regionId", 1)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.isEmpty) {
+                    val entry = CompletedRegion(
+                        regionId = 1,
+                        userUid = uid
+                    )
+
+                    firestore.collection("completed_region").add(entry)
+                }
+            }
+    }
+
 }
 

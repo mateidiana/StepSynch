@@ -40,6 +40,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
     var username by remember { mutableStateOf<String?>(null) }
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+    var completedRegionsCount by remember { mutableStateOf(0) }
 
     val creationDate = currentUser?.metadata?.creationTimestamp
         ?.let { timestamp ->
@@ -57,6 +58,9 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
             }
             authRepository.getUserGameStats(uid) { userGameStats ->
                 gameStats = userGameStats
+            }
+            authRepository.getCompletedRegionCount(uid) { count ->
+                completedRegionsCount = count
             }
         }
     }
@@ -265,7 +269,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                         InfoRow("Member Since", userStats.joinedDate, Icons.Default.CalendarToday)
                         InfoRow("Team", userStats.teamName, Icons.Default.Group)
                         InfoRow("Current Streak", "${userStats.streak} days", Icons.Default.TrendingUp)
-                        InfoRow("Regions Explored", "1 / 10", Icons.Default.Place)
+                        InfoRow("Regions Explored", "$completedRegionsCount / 10", Icons.Default.Place)
                     }
                 }
 
