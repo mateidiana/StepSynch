@@ -78,9 +78,9 @@ class AuthRepository {
                         getUserCount { userCount ->
                             val gameStats = UserStatsGame(
                                 id = uid,
-                                energyPoints = 2000,
+                                energyPoints = 5000,
                                 rank = userCount,
-                                totalEnergyPoints = 2000,
+                                totalEnergyPoints = 5000,
                                 totalSteps = 8500,
                                 activeChallengesCount = 0,
                                 earnedBadgesCount = 0,
