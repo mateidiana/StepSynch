@@ -33,6 +33,7 @@ import com.example.stepsynch.models.RegionType
 fun RegionDetailPanel(
     region: Region,
     energy: Int,
+    isCompleted: Boolean,
     onClose: () -> Unit,
     onStartExploring: (Region) -> Unit
 ) {
@@ -85,26 +86,34 @@ fun RegionDetailPanel(
 
             Spacer(Modifier.height(20.dp))
 
-            // ─── Stats cards ─────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(
-                    label = "Energy Cost",
-                    value = region.energyCost.toString(),
-                    icon = Icons.Default.Bolt,
-                    iconColor = olive
-                )
+                if (isCompleted) {
+                    StatCard(
+                        label = "Region",
+                        value = "Complete",
+                        icon = Icons.Default.Star,
+                        iconColor = Color(0xFF3E5622)
+                    )
+                } else {
+                    StatCard(
+                        label = "Energy Cost",
+                        value = region.energyCost.toString(),
+                        icon = Icons.Default.Bolt,
+                        iconColor = olive
+                    )
 
-                StatCard(
-                    label = "Steps Required",
-                    value = region.stepsRequired.toString(),
-                    icon = Icons.Default.NordicWalking,
-                    iconColor = deepGreen
-                )
+                    StatCard(
+                        label = "Steps Required",
+                        value = region.stepsRequired.toString(),
+                        icon = Icons.Default.NordicWalking,
+                        iconColor = deepGreen
+                    )
+                }
 
-                if (region.teamRequired){
+                if (region.teamRequired) {
                     StatCard(
                         label = "Required",
                         value = "Team",
@@ -113,6 +122,7 @@ fun RegionDetailPanel(
                     )
                 }
             }
+
 
             Spacer(Modifier.height(24.dp))
 

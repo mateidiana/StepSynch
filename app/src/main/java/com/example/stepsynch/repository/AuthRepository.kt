@@ -78,9 +78,9 @@ class AuthRepository {
                         getUserCount { userCount ->
                             val gameStats = UserStatsGame(
                                 id = uid,
-                                energyPoints = 1000,
+                                energyPoints = 2000,
                                 rank = userCount,
-                                totalEnergyPoints = 1000,
+                                totalEnergyPoints = 2000,
                                 totalSteps = 8500,
                                 activeChallengesCount = 0,
                                 earnedBadgesCount = 0,
@@ -240,6 +240,91 @@ class AuthRepository {
             }
             .addOnFailureListener {
                 onResult(0)
+            }
+    }
+
+    fun addLandmarkForUser(
+        regionId: Int,
+        landmarkId: Int,
+        userUid: String,
+        onComplete: () -> Unit = {}
+    ) {
+        val doc = firestore.collection("added_landmark").document()
+        val data = mapOf(
+            "regionId" to regionId,
+            "landmarkId" to landmarkId,
+            "userUid" to userUid
+        )
+        doc.set(data).addOnSuccessListener { onComplete() }
+    }
+
+    fun getCollectedLandmarks(
+        regionId: Int,
+        userUid: String,
+        onResult: (List<Int>) -> Unit
+    ) {
+        firestore.collection("added_landmark")
+            .whereEqualTo("regionId", regionId)
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(snap.documents.mapNotNull { it.getLong("landmarkId")?.toInt() })
+            }
+    }
+
+    fun markRegionCompleted(
+        regionId: Int,
+        userUid: String,
+        onComplete: () -> Unit = {}
+    ) {
+        val doc = firestore.collection("completed_region").document()
+        doc.set(
+            mapOf(
+                "regionId" to regionId,
+                "userUid" to userUid
+            )
+        ).addOnSuccessListener { onComplete() }
+    }
+
+    fun isRegionCompleted(
+        regionId: Int,
+        userUid: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestore.collection("completed_region")
+            .whereEqualTo("regionId", regionId)
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { onResult(!it.isEmpty) }
+    }
+
+    fun updateEnergy(
+        userUid: String,
+        deltaEnergy: Int,
+        deltaTotalEnergy: Int = 0
+    ) {
+        firestore.collection("user_stats_game")
+            .whereEqualTo("userUid", userUid)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { querySnap ->
+                val doc = querySnap.documents.firstOrNull() ?: return@addOnSuccessListener
+                val docRef = doc.reference
+
+                firestore.runTransaction { tx ->
+                    val snap = tx.get(docRef)
+
+                    val currentEnergy = snap.getLong("energyPoints") ?: 0
+                    val totalEnergy = snap.getLong("totalEnergyPoints") ?: 0
+
+                    tx.update(
+                        docRef,
+                        mapOf(
+                            "energyPoints" to (currentEnergy + deltaEnergy),
+                            "totalEnergyPoints" to (totalEnergy + deltaTotalEnergy)
+                        )
+                    )
+                }
             }
     }
 

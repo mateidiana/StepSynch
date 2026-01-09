@@ -31,19 +31,30 @@ fun MapDetailViewScreen(
 ) {
     val currentUser by authRepository.currentUser.collectAsState()
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+    val collectedLandmarkIds = remember { mutableStateListOf<Int>() }
+    var energy by remember { mutableStateOf(0) }
 
-    LaunchedEffect(currentUser) {
+    LaunchedEffect(currentUser, regionId) {
         currentUser?.uid?.let { uid ->
             authRepository.getUserGameStats(uid) { userGameStats ->
                 gameStats = userGameStats
             }
+            authRepository.getCollectedLandmarks(regionId, uid) {
+                collectedLandmarkIds.clear()
+                collectedLandmarkIds.addAll(it)
+            }
         }
     }
 
-    var energy = gameStats?.energyPoints ?: 0
+    LaunchedEffect(gameStats) {
+        energy = gameStats?.energyPoints ?: 0
+    }
+
+    //var energy = gameStats?.energyPoints ?: 0
     //var energy by remember { mutableStateOf(2450) }
     var explorationProgress by remember { mutableStateOf(65) }
-    var collectedItems by remember { mutableStateOf(0) }
+    //var collectedItems by remember { mutableStateOf(0) }
+    val collectedItems = collectedLandmarkIds.size
     val totalItems = 8
 
     var selectedLandmark by remember { mutableStateOf<Landmark?>(null) }
@@ -62,16 +73,55 @@ fun MapDetailViewScreen(
         )
     }
 
+    LaunchedEffect(collectedLandmarkIds.toList()) {
+        landmarks.replaceAll {
+            it.copy(collected = collectedLandmarkIds.contains(it.id))
+        }
+    }
+
+    fun completeRegion(userUid: String) {
+        authRepository.markRegionCompleted(regionId, userUid)
+
+        authRepository.updateEnergy(
+            userUid = userUid,
+            deltaEnergy = 250,
+            deltaTotalEnergy = 250
+        )
+    }
+
     fun collectLandmark() {
-        selectedLandmark?.let { lm ->
-            val index = landmarks.indexOfFirst { it.id == lm.id }
-            if (index != -1 && !lm.collected) {
-                landmarks[index] = lm.copy(collected = true)
-                collectedItems++
-                explorationProgress = min(100, explorationProgress + 10)
-                energy -= 125
+        val lm = selectedLandmark ?: return
+        val uid = currentUser?.uid ?: return
+        if (lm.collected) return
+
+        //Update UI instantly
+        landmarks.replaceAll {
+            if (it.id == lm.id) it.copy(collected = true) else it
+        }
+
+        //Subtract energy
+        energy -= 100
+        authRepository.updateEnergy(uid, deltaEnergy = -100)
+
+        //Insert into added_landmark
+        authRepository.addLandmarkForUser(
+            regionId = regionId,
+            landmarkId = lm.id,
+            userUid = uid
+        )
+
+        //Re-check region completion
+        authRepository.getCollectedLandmarks(regionId, uid) { collected ->
+            if (collected.size == 8) {
+                completeRegion(uid)
             }
         }
+        collectedLandmarkIds.add(lm.id)
+        authRepository.getCollectedLandmarks(regionId, uid) {
+            collectedLandmarkIds.clear()
+            collectedLandmarkIds.addAll(it)
+        }
+
     }
 
     Column(

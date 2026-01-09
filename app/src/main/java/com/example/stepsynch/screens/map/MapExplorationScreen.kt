@@ -29,23 +29,29 @@ fun MapExplorationScreen(
     val currentUser by authRepository.currentUser.collectAsState()
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+    var isCompleted by remember { mutableStateOf(false) }
+    val selectedRegion by viewModel.selectedRegion.collectAsState()
+    val regionId = selectedRegion?.id
 
-    LaunchedEffect(currentUser) {
-        currentUser?.uid?.let { uid ->
-            authRepository.getUserStats(uid) { userStats ->
-                stats = userStats
-            }
-            authRepository.getUserGameStats(uid) { userGameStats ->
-                gameStats = userGameStats
+    LaunchedEffect(currentUser, regionId) {
+        val uid = currentUser?.uid
+        val rid = regionId
+
+        if (uid != null && rid != null) {
+            authRepository.getUserStats(uid) { stats = it }
+            authRepository.getUserGameStats(uid) { gameStats = it }
+            authRepository.isRegionCompleted(rid, uid) {
+                isCompleted = it
             }
         }
     }
+
 
     val steps = stats?.stepCountToday ?: 0
     val energy = gameStats?.energyPoints ?: 0
     //val energy by viewModel.currentEnergy.collectAsState()
     //val steps by viewModel.todaySteps.collectAsState()
-    val selectedRegion by viewModel.selectedRegion.collectAsState()
+    //val selectedRegion by viewModel.selectedRegion.collectAsState()
 
     Column(
         modifier = Modifier
@@ -69,6 +75,7 @@ fun MapExplorationScreen(
             RegionDetailPanel(
                 region = it,
                 energy = energy,
+                isCompleted = isCompleted,
                 onClose = viewModel::clearSelection,
                 onStartExploring = { region ->
                     if (region.id == 1) { // Welcome Park
