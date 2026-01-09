@@ -5,6 +5,8 @@ import com.example.stepsynch.models.UserStatsGF
 import com.example.stepsynch.models.UserStatsGame
 import com.example.stepsynch.models.AddedLandmark
 import com.example.stepsynch.models.CompletedRegion
+import com.example.stepsynch.models.Friend
+import com.example.stepsynch.models.FriendRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -325,6 +327,79 @@ class AuthRepository {
                         )
                     )
                 }
+            }
+    }
+
+    // Send friend request
+    fun sendFriendRequest(senderUid: String, receiverUid: String, onComplete: () -> Unit = {}) {
+        val doc = firestore.collection("friend_request").document()
+        val data = mapOf(
+            "user1Uid" to senderUid,
+            "user2Uid" to receiverUid,
+            "accepted" to false
+        )
+        doc.set(data).addOnSuccessListener { onComplete() }
+    }
+
+    // Get friend requests for current user
+    fun getFriendRequests(userUid: String, onResult: (List<FriendRequest>) -> Unit) {
+        firestore.collection("friend_request")
+            .whereEqualTo("user2Uid", userUid)
+            .whereEqualTo("accepted", false)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(snap.toObjects(FriendRequest::class.java))
+            }
+    }
+
+    fun acceptFriendRequest(user1Uid: String, user2Uid: String, onComplete: () -> Unit = {}) {
+        val friendDoc = firestore.collection("friend").document()
+        val data = mapOf(
+            "user1Uid" to user1Uid,
+            "user2Uid" to user2Uid
+        )
+
+        // Create the friend entry
+        friendDoc.set(data)
+            .addOnSuccessListener {
+                // Find the friend request document by the two user IDs
+                firestore.collection("friend_request")
+                    .whereEqualTo("user1Uid", user1Uid)
+                    .whereEqualTo("user2Uid", user2Uid)
+                    .get()
+                    .addOnSuccessListener { snap ->
+                        if (snap.documents.isNotEmpty()) {
+                            val requestDoc = snap.documents.first()
+                            requestDoc.reference.update("accepted", true)
+                                .addOnSuccessListener { onComplete() }
+                                .addOnFailureListener { e ->
+                                    println("Failed to update friend request: ${e.message}")
+                                }
+                        } else {
+                            println("Friend request not found")
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        println("Failed to query friend request: ${e.message}")
+                    }
+            }
+            .addOnFailureListener { e ->
+                println("Failed to create friend: ${e.message}")
+            }
+    }
+
+    fun getFriends(userUid: String, onResult: (List<Friend>) -> Unit) {
+        firestore.collection("friend")
+            .whereIn("user1Uid", listOf(userUid))
+            .get()
+            .addOnSuccessListener { snap1 ->
+                firestore.collection("friend")
+                    .whereIn("user2Uid", listOf(userUid))
+                    .get()
+                    .addOnSuccessListener { snap2 ->
+                        val combined = snap1.toObjects(Friend::class.java) + snap2.toObjects(Friend::class.java)
+                        onResult(combined)
+                    }
             }
     }
 

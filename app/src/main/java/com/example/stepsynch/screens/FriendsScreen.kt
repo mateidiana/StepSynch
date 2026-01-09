@@ -19,8 +19,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.stepsynch.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.example.stepsynch.models.FriendRequest
+import com.example.stepsynch.models.Friend
 
-data class Friend(
+data class FriendUI(
     val id: String,
     val name: String,
     val initials: String,
@@ -39,39 +41,61 @@ data class Team(
 
 @Composable
 fun FriendsScreen(navController: NavController, authRepository: AuthRepository) {
-//    val people = remember {
-//        listOf(
-//            Friend(1, "Sarah Chen", "SC", 12543, 3200, 12),
-//            Friend(2, "Mike Johnson", "MJ", 10234, 2850, 8),
-//            Friend(3, "Emma Davis", "ED", 9876, 2400, 15),
-//            Friend(4, "James Wilson", "JW", 8234, 2100, 5),
-//            Friend(5, "Lisa Anderson", "LA", 7845, 1980, 9)
-//        )
-//    }
-
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-    var people by remember { mutableStateOf<List<Friend>>(emptyList()) }
+    var people by remember { mutableStateOf<List<FriendUI>>(emptyList()) }
     var selectedTab by remember { mutableStateOf("people") }
+    var requests by remember { mutableStateOf<List<FriendRequest>>(emptyList()) }
+    var friends by remember { mutableStateOf<List<Friend>>(emptyList()) }
 
-    // 🔹 Load users from Firestore
+    //Load users from Firestore
     LaunchedEffect(Unit) {
         authRepository.getAllUsers { users ->
-            people = users
-                .filter { it.uid != currentUserId }
-                .map { user ->
-                    Friend(
-                        id = user.uid,
-                        name = user.username,
-                        initials = user.username
-                            .split(" ")
-                            .take(2)
-                            .joinToString("") { it.first().uppercase() },
-                        steps = 8_500,
-                        energy = 2_100,
-                        streak = 7
-                    )
+            val filteredUsers = users.filter { it.uid != currentUserId }
+
+            // For each user, fetch their stats
+            val friendsList = mutableListOf<FriendUI>()
+            filteredUsers.forEach { user ->
+                // Fetch GF stats (steps, streak)
+                authRepository.getUserStats(user.uid) { gfStats ->
+                    // Fetch Game stats (energy)
+                    authRepository.getUserGameStats(user.uid) { gameStats ->
+
+                        // Add friend to list with real stats
+                        val friend = FriendUI(
+                            id = user.uid,
+                            name = user.username,
+                            initials = user.username
+                                .split(" ")
+                                .take(2)
+                                .joinToString("") { it.first().uppercase() },
+                            steps = gfStats?.stepCountToday ?: 0,
+                            streak = gfStats?.streak ?: 0,
+                            energy = gameStats?.energyPoints ?: 0
+                        )
+
+                        friendsList.add(friend)
+                        // Update the state so UI refreshes
+                        people = friendsList.toList()
+                    }
                 }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        currentUserId?.let { uid ->
+            authRepository.getFriendRequests(uid) { list ->
+                requests = list
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        currentUserId?.let { uid ->
+            authRepository.getFriends(uid) { list ->
+                friends = list
+            }
         }
     }
 
@@ -197,7 +221,13 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
 
                                     // ✅ Add Friend button
                                     OutlinedButton(
-                                        onClick = { },
+                                        onClick = {
+                                            currentUserId?.let { sender ->
+                                                authRepository.sendFriendRequest(sender, friend.id) {
+                                                    // Optional: show toast/snackbar "Request sent"
+                                                }
+                                            }
+                                        },
                                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                                         modifier = Modifier.height(28.dp)
                                     ) {
@@ -238,8 +268,78 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                 }
             }
 
-            "friends" -> EmptyState("No friends yet")
-            "requests" -> EmptyState("No friend requests yet")
+            "friends" -> {
+                val friendsUI = remember(friends, people) {
+                    friends.map { friend ->
+                        val friendUid = if (friend.user1Uid == currentUserId) friend.user2Uid else friend.user1Uid
+                        val user = people.find { it.id == friendUid }
+                        FriendUI(
+                            id = friend.id,
+                            name = user?.name ?: "Unknown",
+                            initials = user?.initials ?: "",
+                            steps = user?.steps ?: 0,
+                            energy = user?.energy ?: 0,
+                            streak = user?.streak ?: 0
+                        )
+                    }
+                }
+
+
+                LazyColumn {
+                    items(friendsUI) { friendUI ->
+                        Text(friendUI.name) // now it works
+                    }
+                }
+            }
+
+            "requests" -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(requests) { request ->
+                        Card {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(request.user1Uid) // You can fetch sender's username for nicer UI
+                                Spacer(Modifier.width(12.dp))
+                                Button(onClick = {
+                                    authRepository.acceptFriendRequest(
+                                        request.user1Uid,
+                                        request.user2Uid
+                                    ) {
+                                        // Refresh requests list after accepting
+                                        requests = requests.filter { !(it.user1Uid == request.user1Uid && it.user2Uid == request.user2Uid) }
+
+                                        // Optionally refresh friends list
+                                        currentUserId?.let { uid ->
+                                            authRepository.getFriends(uid) { list -> friends = list }
+                                        }
+                                    }
+                                }) {
+                                    Text("Accept")
+                                }
+
+//                                Button(onClick = {
+//                                    authRepository.acceptFriendRequest(
+//                                        request.id,
+//                                        request.user1Uid,
+//                                        request.user2Uid
+//                                    ) {
+//                                        // Refresh requests list
+//                                        requests = requests.filter { it.id != request.id }
+//                                    }
+//                                }) {
+//                                    Text("Accept")
+//                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
