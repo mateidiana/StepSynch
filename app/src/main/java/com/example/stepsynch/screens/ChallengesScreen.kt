@@ -28,9 +28,10 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.navigation.NavController
 import kotlin.math.roundToInt
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun ChallengesScreen(navController: NavController) {
+fun ChallengesScreen(navController: NavController, authRepository: AuthRepository) {
     // Color palette (match your earlier palette)
     val bgTop = Color(0xFFF8FAF6)
     val bgBottom = Color(0x1995B46A) // semi-transparent
@@ -44,49 +45,49 @@ fun ChallengesScreen(navController: NavController) {
     val muted = Color(0x993E5622)
     val deepGreen = Color(0xFF3E5622)
 
-    // Sample data (same as your JS version)
-    val activeChallenges = remember {
-        listOf(
-            ChallengeType(
-                id = 1,
-                name = "Weekend Warrior",
-                description = "Walk 15,000 steps on Saturday",
-                type = "daily",
-                progress = 8234,
-                target = 15000,
-                reward = "Bronze Medal",
-                badgeIcon = "🥉",
-                energyBonus = 500
-            ),
-            ChallengeType(
-                id = 2,
-                name = "Team Explorer",
-                description = "Join 2 teams",
-                type = "team",
-                progress = 1,
-                target = 2,
-                reward = "Team Badge",
-                badgeIcon = "🗺️",
-                energyBonus = 1000
-            ),
-            ChallengeType(
-                id = 3,
-                name = "Morning Mover",
-                description = "Walk 5,000 steps before 10 AM",
-                type = "daily",
-                progress = 3456,
-                target = 5000,
-                reward = "Early Bird Badge",
-                badgeIcon = "🌅",
-                energyBonus = 300
-            )
-        )
+    val currentUser by authRepository.currentUser.collectAsState()
+
+    var activeChallengeIds by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var completedChallengeIds by remember { mutableStateOf<List<Int>>(emptyList()) }
+
+    LaunchedEffect(currentUser) {
+        currentUser?.uid?.let { uid ->
+            authRepository.getActiveChallenges(uid) {
+                activeChallengeIds = it
+            }
+
+            authRepository.getCompletedChallenges(uid) {
+                completedChallengeIds = it
+            }
+        }
     }
 
     val availableChallenges = remember {
         listOf(
             AvailableChallenge(
-                id = 4,
+                id = 1,
+                name = "First Steps",
+                description = "Complete your first day",
+                type = "daily",
+                target = 2000,
+                difficulty = "Easy",
+                reward = "Welcome Badge",
+                badgeIcon = "👋",
+                energyBonus = 150
+            ),
+            AvailableChallenge(
+                id = 2,
+                name = "Daily Streak",
+                description = "Walk 5 days in a row",
+                type = "daily",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Streak Starter",
+                badgeIcon = "🔥",
+                energyBonus = 300
+            ),
+            AvailableChallenge(
+                id = 3,
                 name = "10K Champion",
                 description = "Reach 10,000 steps every day for a week",
                 type = "weekly",
@@ -97,7 +98,7 @@ fun ChallengesScreen(navController: NavController) {
                 energyBonus = 2000,
             ),
             AvailableChallenge(
-                id = 5,
+                id = 4,
                 name = "Ultra Walker",
                 description = "Walk 50,000 steps in a single day",
                 type = "special",
@@ -108,7 +109,7 @@ fun ChallengesScreen(navController: NavController) {
                 energyBonus = 5000,
             ),
             AvailableChallenge(
-                id = 6,
+                id = 5,
                 name = "Social Butterfly",
                 description = "Add 5 new friends",
                 type = "social",
@@ -116,35 +117,64 @@ fun ChallengesScreen(navController: NavController) {
                 difficulty = "Easy",
                 reward = "Community Star",
                 badgeIcon = "🦋",
-                energyBonus = 800,
+                energyBonus = 500,
+            ),
+            AvailableChallenge(
+                id = 6,
+                name = "Team explorer",
+                description = "Join 1 team",
+                type = "social",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Team badge",
+                badgeIcon = "🗺️",
+                energyBonus = 300,
             )
         )
     }
 
-    val completedChallenges = remember {
-        listOf(
-            CompletedChallenge(
-                id = 7,
-                name = "First Steps",
-                description = "Complete your first day",
-                completedDate = "Nov 15, 2025",
-                reward = "Welcome Badge",
-                badgeIcon = "👋"
-            ),
-            CompletedChallenge(
-                id = 8,
-                name = "Daily Streak",
-                description = "Walk 5 days in a row",
-                completedDate = "Nov 18, 2025",
-                reward = "Streak Starter",
-                badgeIcon = "🔥"
+    val activeChallenges = availableChallenges
+        .filter { activeChallengeIds.contains(it.id) }
+        .map {
+            ChallengeType(
+                id = it.id,
+                name = it.name,
+                description = it.description,
+                type = it.type,
+                progress = 0, // later you’ll calculate this
+                target = it.target,
+                reward = it.reward,
+                badgeIcon = it.badgeIcon,
+                energyBonus = it.energyBonus
             )
-        )
+        }
+
+    val availableChallengesFiltered = availableChallenges.filter {
+        !activeChallengeIds.contains(it.id) &&
+                !completedChallengeIds.contains(it.id)
     }
+
+    val completedChallenges = availableChallenges
+        .filter { completedChallengeIds.contains(it.id) }
+        .map {
+            CompletedChallenge(
+                id = it.id,
+                name = it.name,
+                description = it.description,
+                completedDate = "Completed",
+                reward = it.reward,
+                badgeIcon = it.badgeIcon
+            )
+        }
+
 
     // Tab state
     var selectedTab by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Active (${activeChallenges.size})", "Available", "Completed (${completedChallenges.size})")
+    val tabTitles = listOf(
+        "Active (${activeChallengeIds.size})",
+        "Available",
+        "Completed (${completedChallengeIds.size})"
+    )
 
 
     Surface(
@@ -248,16 +278,29 @@ fun ChallengesScreen(navController: NavController) {
                             accentOlive = accentOlive,
                             titleDark = titleDark,
                             muted = muted,
-                            onCompleteClick = { /* TODO: join action */ }
+                            onCompleteClick = { challenge ->
+                                val uid = currentUser?.uid ?: return@ActiveTabContent
+
+                                authRepository.completeChallenge(uid, challenge.id) {
+                                    activeChallengeIds = activeChallengeIds - challenge.id
+                                    completedChallengeIds = completedChallengeIds + challenge.id
+                                }
+                            }
                         )
                         1 -> AvailableTabContent(
-                            items = availableChallenges,
+                            items = availableChallengesFiltered,
                             primary = primary,
                             midGreen = midGreen,
                             accentOlive = accentOlive,
                             titleDark = titleDark,
                             muted = muted,
-                            onJoinClick = { /* TODO: join action */ }
+                            onJoinClick = { challenge ->
+                                val uid = currentUser?.uid ?: return@AvailableTabContent
+
+                                authRepository.addActiveChallenge(uid, challenge.id) {
+                                    activeChallengeIds = activeChallengeIds + challenge.id
+                                }
+                            }
                         )
                         2 -> CompletedTabContent(
                             items = completedChallenges,
@@ -706,7 +749,7 @@ private data class ChallengeType(
     val energyBonus: Int
 )
 
-private data class AvailableChallenge(
+data class AvailableChallenge(
     val id: Int,
     val name: String,
     val description: String,

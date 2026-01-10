@@ -38,6 +38,8 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
     var username by remember { mutableStateOf<String?>(null) }
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+    var activeChallenges by remember { mutableStateOf(0) }
+    var earnedBadges by remember { mutableStateOf(0) }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
@@ -54,6 +56,13 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
             }
             authRepository.getUserGameStats(uid) { userGameStats ->
                 gameStats = userGameStats
+            }
+            authRepository.getActiveChallengeCount(uid) {
+                activeChallenges = it
+            }
+
+            authRepository.getCompletedChallengeCount(uid) {
+                earnedBadges = it
             }
         }
     }
@@ -73,8 +82,8 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
     val thisWeek = stats?.stepCountThisWeek ?: 0
     val calories = stats?.caloriesToday ?: 0
     val distance = stats?.distanceToday ?: 0
-    val activeChallenges = gameStats?.activeChallengesCount ?: 0
-    val earnedBadges = gameStats?.earnedBadgesCount ?: 0
+    //val activeChallenges = gameStats?.activeChallengesCount ?: 0
+    //val earnedBadges = gameStats?.earnedBadgesCount ?: 0
 
     val quickStats = listOf(
         QuickStat("Weekly Avg", weeklyAvg.toString(), Icons.Default.TrendingUp, Color(0xFF709255)),

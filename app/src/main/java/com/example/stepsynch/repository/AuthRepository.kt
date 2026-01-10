@@ -7,6 +7,8 @@ import com.example.stepsynch.models.AddedLandmark
 import com.example.stepsynch.models.CompletedRegion
 import com.example.stepsynch.models.Friend
 import com.example.stepsynch.models.FriendRequest
+import com.example.stepsynch.models.ActiveChallenge
+import com.example.stepsynch.models.CompletedChallenge
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -460,6 +462,114 @@ class AuthRepository {
             }
             .addOnFailureListener {
                 onResult(null)
+            }
+    }
+
+    fun getActiveChallenges(
+        userUid: String,
+        onResult: (List<Int>) -> Unit
+    ) {
+        firestore.collection("active_challenge")
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { snap ->
+                val ids = snap.documents.mapNotNull {
+                    it.getLong("challengeId")?.toInt()
+                }
+                onResult(ids)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
+    fun getCompletedChallenges(
+        userUid: String,
+        onResult: (List<Int>) -> Unit
+    ) {
+        firestore.collection("completed_challenge")
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { snap ->
+                val ids = snap.documents.mapNotNull {
+                    it.getLong("challengeId")?.toInt()
+                }
+                onResult(ids)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
+    fun addActiveChallenge(
+        userUid: String,
+        challengeId: Int,
+        onComplete: () -> Unit = {}
+    ) {
+        val entry = ActiveChallenge(
+            challengeId = challengeId,
+            userUid = userUid
+        )
+
+        firestore.collection("active_challenge")
+            .add(entry)
+            .addOnSuccessListener { onComplete() }
+    }
+
+    fun completeChallenge(
+        userUid: String,
+        challengeId: Int,
+        onComplete: () -> Unit = {}
+    ) {
+        val completedEntry = CompletedChallenge(
+            challengeId = challengeId,
+            userUid = userUid
+        )
+
+        // 1️⃣ Add to completed_challenge
+        firestore.collection("completed_challenge")
+            .add(completedEntry)
+            .addOnSuccessListener {
+
+                // 2️⃣ Remove from active_challenge
+                firestore.collection("active_challenge")
+                    .whereEqualTo("userUid", userUid)
+                    .whereEqualTo("challengeId", challengeId)
+                    .get()
+                    .addOnSuccessListener { snap ->
+                        snap.documents.forEach { it.reference.delete() }
+                        onComplete()
+                    }
+            }
+    }
+
+    fun getActiveChallengeCount(
+        userUid: String,
+        onResult: (Int) -> Unit
+    ) {
+        firestore.collection("active_challenge")
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(snap.size())
+            }
+            .addOnFailureListener {
+                onResult(0)
+            }
+    }
+
+    fun getCompletedChallengeCount(
+        userUid: String,
+        onResult: (Int) -> Unit
+    ) {
+        firestore.collection("completed_challenge")
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(snap.size())
+            }
+            .addOnFailureListener {
+                onResult(0)
             }
     }
 

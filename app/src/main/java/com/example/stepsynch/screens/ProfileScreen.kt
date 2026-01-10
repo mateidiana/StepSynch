@@ -42,6 +42,78 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
     var completedRegionsCount by remember { mutableStateOf(0) }
     var teamName by remember { mutableStateOf("No team yet") }
+    var earnedBadges by remember { mutableStateOf<List<AvailableChallenge>>(emptyList()) }
+
+    val availableChallenges = remember {
+        listOf(
+            AvailableChallenge(
+                id = 1,
+                name = "First Steps",
+                description = "Complete your first day",
+                type = "daily",
+                target = 2000,
+                difficulty = "Easy",
+                reward = "Welcome Badge",
+                badgeIcon = "👋",
+                energyBonus = 150
+            ),
+            AvailableChallenge(
+                id = 2,
+                name = "Daily Streak",
+                description = "Walk 5 days in a row",
+                type = "daily",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Streak Starter",
+                badgeIcon = "🔥",
+                energyBonus = 300
+            ),
+            AvailableChallenge(
+                id = 3,
+                name = "10K Champion",
+                description = "Reach 10,000 steps every day for a week",
+                type = "weekly",
+                target = 7,
+                difficulty = "Medium",
+                reward = "Consistency Master",
+                badgeIcon = "⭐",
+                energyBonus = 2000,
+            ),
+            AvailableChallenge(
+                id = 4,
+                name = "Ultra Walker",
+                description = "Walk 50,000 steps in a single day",
+                type = "special",
+                target = 50000,
+                difficulty = "Hard",
+                reward = "Ultra Badge",
+                badgeIcon = "💎",
+                energyBonus = 5000,
+            ),
+            AvailableChallenge(
+                id = 5,
+                name = "Social Butterfly",
+                description = "Add 5 new friends",
+                type = "social",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Community Star",
+                badgeIcon = "🦋",
+                energyBonus = 500,
+            ),
+            AvailableChallenge(
+                id = 6,
+                name = "Team explorer",
+                description = "Join 1 team",
+                type = "social",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Team badge",
+                badgeIcon = "🗺️",
+                energyBonus = 300,
+            )
+        )
+    }
 
     val teams = remember {
         listOf(
@@ -73,6 +145,10 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                 teamName = teams.firstOrNull { it.id == teamId }?.name
                     ?: "No team yet"
             }
+            authRepository.getCompletedChallenges(uid) { completedIds ->
+                // Match completed IDs with availableChallenges
+                earnedBadges = availableChallenges.filter { it.id in completedIds }
+            }
         }
     }
 
@@ -92,13 +168,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
             val activeChallenges = gameStats?.activeChallengesCount ?: 0
             val badgesEarned = gameStats?.earnedBadgesCount ?: 0
 
-    }
-
-    val earnedBadges = remember {
-        listOf(
-            Triple("First Steps", "👋", "Common"),
-            Triple("Daily Streak", "🔥", "Common")
-        )
     }
 
     val completedChallenges = remember {
@@ -313,47 +382,15 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                                     .background(Color(0xFF95B46A).copy(alpha = 0.3f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(badge.second, fontSize = 20.sp)
+                                Text(badge.badgeIcon, fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(badge.first, fontSize = 12.sp, textAlign = TextAlign.Center)
+                            Text(badge.name, fontSize = 12.sp, textAlign = TextAlign.Center)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
-
-
-                // ---------------- COMPLETED CHALLENGES ----------------
-                Text(
-                    "Completed Challenges",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 10.dp)
-                )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    completedChallenges.forEach { challenge ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                Text(challenge.first, fontWeight = FontWeight.Bold)
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("${challenge.third} steps", color = Color(0xFF3E5622))
-                                    Text(challenge.second, color = Color.Gray)
-                                }
-                            }
-                        }
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
