@@ -21,6 +21,7 @@ import com.example.stepsynch.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.example.stepsynch.models.FriendRequest
 import com.example.stepsynch.models.Friend
+import com.example.stepsynch.models.User
 
 data class FriendUI(
     val id: String,
@@ -47,6 +48,11 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
     var selectedTab by remember { mutableStateOf("people") }
     var requests by remember { mutableStateOf<List<FriendRequest>>(emptyList()) }
     var friends by remember { mutableStateOf<List<Friend>>(emptyList()) }
+    var usersById by remember { mutableStateOf<Map<String, User>>(emptyMap()) }
+    var showMembersDialog by remember { mutableStateOf(false) }
+    var teamMembers by remember { mutableStateOf<List<String>>(emptyList()) }
+    var joinedTeams by remember { mutableStateOf<Set<Int>>(emptySet()) }
+    var teamEnergy by remember { mutableStateOf<Map<Int, Int>>(emptyMap()) }
 
     //Load users from Firestore
     LaunchedEffect(Unit) {
@@ -99,10 +105,36 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
         }
     }
 
+    LaunchedEffect(Unit) {
+        authRepository.getAllUsers { users ->
+            usersById = users.associateBy { it.uid }
+        }
+    }
+
     val teams = remember {
         listOf(
             Team(1, "The Steppers", 3, 30622, Color(0xFF3E5622))
         )
+    }
+
+    LaunchedEffect(currentUserId) {
+        currentUserId?.let { uid ->
+            teams.forEach { team ->
+                authRepository.getTeamMembers(team.id) { members ->
+                    if (members.contains(uid)) {
+                        joinedTeams = joinedTeams + team.id
+                    }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        teams.forEach { team ->
+            authRepository.getTeamTotalEnergy(team.id) { energy ->
+                teamEnergy = teamEnergy + (team.id to energy)
+            }
+        }
     }
 
     val gradientBackground = Brush.verticalGradient(
@@ -111,8 +143,6 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
             Color(0xFF95B46A).copy(alpha = 0.1f)
         )
     )
-
-    //var selectedTab by remember { mutableStateOf("people") }
 
     Column(
         modifier = Modifier
@@ -219,7 +249,7 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                                         color = Color(0xFF3E5622).copy(alpha = 0.7f)
                                     )
 
-                                    // ✅ Add Friend button
+                                    //Add Friend button
                                     OutlinedButton(
                                         onClick = {
                                             currentUserId?.let { sender ->
@@ -259,10 +289,45 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(team.name, fontWeight = FontWeight.Bold, color = Color.White)
-                                Text("${team.members} active members", color = Color.White.copy(alpha = 0.8f))
                                 Spacer(Modifier.height(8.dp))
-                                Text("Team Steps Today: ${team.totalSteps}", color = Color.White.copy(alpha = 0.8f))
+
+                                Text(
+                                    "Team Energy: ${teamEnergy[team.id] ?: 0}",
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+
+                                Spacer(Modifier.height(12.dp))
+
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Button(onClick = {
+                                        authRepository.getTeamMembers(team.id) { members ->
+                                            teamMembers = members
+                                            showMembersDialog = true
+                                        }
+                                    }) {
+                                        Text("View members")
+                                    }
+                                    val isMember = joinedTeams.contains(team.id)
+
+                                    Button(
+                                        onClick = {
+                                            if (!isMember) {
+                                                currentUserId?.let { uid ->
+                                                    authRepository.joinTeam(uid, team.id)
+                                                    joinedTeams = joinedTeams + team.id // update UI instantly
+                                                }
+                                            }
+                                        },
+                                        enabled = !isMember
+                                    ) {
+                                        Text(
+                                            if (isMember) "You are part of this team" else "Join team",
+                                            color = Color.White
+                                        )
+                                    }
+                                }
                             }
+
                         }
                     }
                 }
@@ -284,12 +349,50 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                     }
                 }
 
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(friendsUI) { friend ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .background(Color(0xFF3E5622)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(friend.initials, color = Color.White, fontWeight = FontWeight.Bold)
+                                }
 
-                LazyColumn {
-                    items(friendsUI) { friendUI ->
-                        Text(friendUI.name) // now it works
+                                Spacer(Modifier.width(12.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(friend.name, fontWeight = FontWeight.Bold)
+                                    Spacer(Modifier.height(4.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        StatItem(Icons.Default.DirectionsWalk, friend.steps.toString())
+                                        StatItem(Icons.Default.Bolt, friend.energy.toString())
+                                    }
+                                }
+
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("${friend.streak}", fontWeight = FontWeight.Bold)
+                                    Text("day streak", fontSize = 10.sp)
+                                }
+                            }
+                        }
                     }
                 }
+
             }
 
             "requests" -> {
@@ -304,7 +407,9 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(request.user1Uid) // You can fetch sender's username for nicer UI
+                                val senderName = usersById[request.user1Uid]?.username ?: "Unknown user"
+                                Text(senderName, fontWeight = FontWeight.Bold)
+
                                 Spacer(Modifier.width(12.dp))
                                 Button(onClick = {
                                     authRepository.acceptFriendRequest(
@@ -322,25 +427,35 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                                 }) {
                                     Text("Accept")
                                 }
-
-//                                Button(onClick = {
-//                                    authRepository.acceptFriendRequest(
-//                                        request.id,
-//                                        request.user1Uid,
-//                                        request.user2Uid
-//                                    ) {
-//                                        // Refresh requests list
-//                                        requests = requests.filter { it.id != request.id }
-//                                    }
-//                                }) {
-//                                    Text("Accept")
-//                                }
                             }
                         }
                     }
                 }
             }
         }
+        if (showMembersDialog) {
+            AlertDialog(
+                onDismissRequest = { showMembersDialog = false },
+                confirmButton = {
+                    TextButton(onClick = { showMembersDialog = false }) {
+                        Text("Close")
+                    }
+                },
+                title = { Text("Team Members") },
+                text = {
+                    if (teamMembers.isEmpty()) {
+                        Text("No members yet")
+                    } else {
+                        Column {
+                            teamMembers.forEach { uid ->
+                                Text(usersById[uid]?.username ?: "Unknown user")
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
     }
 }
 

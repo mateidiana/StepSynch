@@ -403,6 +403,49 @@ class AuthRepository {
             }
     }
 
+    fun joinTeam(userUid: String, teamId: Int, onComplete: () -> Unit = {}) {
+        firestore.collection("belongs_to_team")
+            .add(
+                mapOf(
+                    "userUid" to userUid,
+                    "teamId" to teamId
+                )
+            )
+            .addOnSuccessListener { onComplete() }
+    }
+
+    fun getTeamMembers(teamId: Int, onResult: (List<String>) -> Unit) {
+        firestore.collection("belongs_to_team")
+            .whereEqualTo("teamId", teamId)
+            .get()
+            .addOnSuccessListener { snap ->
+                val userIds = snap.documents.mapNotNull { it.getString("userUid") }
+                onResult(userIds)
+            }
+    }
+
+    fun getTeamTotalEnergy(teamId: Int, onResult: (Int) -> Unit) {
+        getTeamMembers(teamId) { members ->
+            if (members.isEmpty()) {
+                onResult(0)
+                return@getTeamMembers
+            }
+
+            firestore.collection("user_stats_game")
+                .whereIn("userUid", members)
+                .get()
+                .addOnSuccessListener { snap ->
+                    val totalEnergy = snap.documents.sumOf {
+                        it.getLong("energyPoints")?.toInt() ?: 0
+                    }
+                    onResult(totalEnergy)
+                }
+                .addOnFailureListener {
+                    onResult(0)
+                }
+        }
+    }
+
     fun ensureUserStats(uid: String) {
         val statsRef = firestore.collection("user_stats_gf").document(uid)
 
