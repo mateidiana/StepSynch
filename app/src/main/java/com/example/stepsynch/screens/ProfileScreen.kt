@@ -41,6 +41,13 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
     var completedRegionsCount by remember { mutableStateOf(0) }
+    var teamName by remember { mutableStateOf("No team yet") }
+
+    val teams = remember {
+        listOf(
+            Team(1, "The Steppers", 0, 0, Color.Unspecified)
+        )
+    }
 
     val creationDate = currentUser?.metadata?.creationTimestamp
         ?.let { timestamp ->
@@ -62,6 +69,10 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
             authRepository.getCompletedRegionCount(uid) { count ->
                 completedRegionsCount = count
             }
+            authRepository.getUserTeam(uid) { teamId ->
+                teamName = teams.firstOrNull { it.id == teamId }?.name
+                    ?: "No team yet"
+            }
         }
     }
 
@@ -77,7 +88,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
             val streak = stats?.streak ?: 0
             val rank = gameStats?.rank ?: 0
             val joinedDate = creationDate.toString()
-            val teamName = "No team yet"
+            val teamName = teamName
             val activeChallenges = gameStats?.activeChallengesCount ?: 0
             val badgesEarned = gameStats?.earnedBadgesCount ?: 0
 

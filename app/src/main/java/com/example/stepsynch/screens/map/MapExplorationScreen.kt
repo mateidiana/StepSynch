@@ -30,6 +30,7 @@ fun MapExplorationScreen(
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
     var isCompleted by remember { mutableStateOf(false) }
+    var isInTeam by remember { mutableStateOf(false) }
     val selectedRegion by viewModel.selectedRegion.collectAsState()
     val regionId = selectedRegion?.id
 
@@ -42,6 +43,9 @@ fun MapExplorationScreen(
             authRepository.getUserGameStats(uid) { gameStats = it }
             authRepository.isRegionCompleted(rid, uid) {
                 isCompleted = it
+            }
+            authRepository.getUserTeam(uid) { teamId ->
+                isInTeam = teamId != null
             }
         }
     }
@@ -76,6 +80,7 @@ fun MapExplorationScreen(
                 region = it,
                 energy = energy,
                 isCompleted = isCompleted,
+                isInTeam = isInTeam,
                 onClose = viewModel::clearSelection,
                 onStartExploring = { region ->
                     if (region.id == 1) { // Welcome Park

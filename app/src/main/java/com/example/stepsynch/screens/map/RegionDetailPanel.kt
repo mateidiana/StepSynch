@@ -34,6 +34,7 @@ fun RegionDetailPanel(
     region: Region,
     energy: Int,
     isCompleted: Boolean,
+    isInTeam: Boolean,
     onClose: () -> Unit,
     onStartExploring: (Region) -> Unit
 ) {
@@ -126,28 +127,41 @@ fun RegionDetailPanel(
 
             Spacer(Modifier.height(24.dp))
 
+            val requiresTeamButUserHasNone = region.teamRequired && !isInTeam
+            val hasEnoughEnergy = energy >= region.energyCost
+
+            val buttonEnabled = !requiresTeamButUserHasNone && hasEnoughEnergy
+
+            val buttonText = when {
+                requiresTeamButUserHasNone -> "Join a team to explore"
+                !hasEnoughEnergy -> "Not Enough Energy"
+                else -> "Start Exploring"
+            }
+
             // ─── Action button ───────────────────────
             Button(
-                onClick = { onStartExploring(region)  },
-                enabled = energy >= region.energyCost,
+                onClick = { onStartExploring(region) },
+                enabled = buttonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (energy >= region.energyCost) deepGreen else deepGreen.copy(alpha = 0.3f),
-                    contentColor = Color.White
+                    containerColor = if (buttonEnabled)
+                        deepGreen
+                    else
+                        deepGreen.copy(alpha = 0.3f),
+                    contentColor = Color.White,
+                    disabledContentColor = Color.White
                 )
             ) {
                 Text(
-                    text = if (energy >= region.energyCost)
-                        "Start Exploring"
-                    else
-                        "Not Enough Energy",
+                    text = buttonText,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
+
         }
     }
 }

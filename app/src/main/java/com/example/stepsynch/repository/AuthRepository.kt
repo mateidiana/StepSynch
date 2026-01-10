@@ -446,6 +446,23 @@ class AuthRepository {
         }
     }
 
+    fun getUserTeam(
+        userUid: String,
+        onResult: (Int?) -> Unit
+    ) {
+        firestore.collection("belongs_to_team")
+            .whereEqualTo("userUid", userUid)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+                val teamId = snap.documents.firstOrNull()?.getLong("teamId")?.toInt()
+                onResult(teamId)
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
     fun ensureUserStats(uid: String) {
         val statsRef = firestore.collection("user_stats_gf").document(uid)
 
