@@ -426,6 +426,21 @@ class AuthRepository {
             }
     }
 
+    fun getUserTeamsCount(
+        userUid: String,
+        onResult: (Int) -> Unit
+    ) {
+        firestore.collection("belongs_to_team")
+            .whereEqualTo("userUid", userUid)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(snap.size())
+            }
+            .addOnFailureListener {
+                onResult(0)
+            }
+    }
+
     fun getTeamTotalEnergy(teamId: Int, onResult: (Int) -> Unit) {
         getTeamMembers(teamId) { members ->
             if (members.isEmpty()) {

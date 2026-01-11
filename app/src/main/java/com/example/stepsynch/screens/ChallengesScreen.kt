@@ -49,6 +49,10 @@ fun ChallengesScreen(navController: NavController, authRepository: AuthRepositor
 
     var activeChallengeIds by remember { mutableStateOf<List<Int>>(emptyList()) }
     var completedChallengeIds by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var stepCountToday by remember { mutableStateOf(0) }
+    var userStreak by remember { mutableStateOf(0) }
+    var friendsCount by remember { mutableStateOf(0) }
+    var teamsCount by remember { mutableStateOf(0) }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
@@ -58,6 +62,17 @@ fun ChallengesScreen(navController: NavController, authRepository: AuthRepositor
 
             authRepository.getCompletedChallenges(uid) {
                 completedChallengeIds = it
+            }
+
+            authRepository.getUserStats(uid) { stats ->
+                stepCountToday = stats?.stepCountToday ?: 0
+                userStreak = stats?.streak ?: 0
+            }
+            authRepository.getFriends(uid) { friends ->
+                friendsCount = friends.size
+            }
+            authRepository.getUserTeamsCount(uid) { count ->
+                teamsCount = count
             }
         }
     }
@@ -124,7 +139,7 @@ fun ChallengesScreen(navController: NavController, authRepository: AuthRepositor
                 name = "Team explorer",
                 description = "Join 1 team",
                 type = "social",
-                target = 5,
+                target = 1,
                 difficulty = "Easy",
                 reward = "Team badge",
                 badgeIcon = "🗺️",
@@ -135,17 +150,25 @@ fun ChallengesScreen(navController: NavController, authRepository: AuthRepositor
 
     val activeChallenges = availableChallenges
         .filter { activeChallengeIds.contains(it.id) }
-        .map {
+        .map { challenge ->
+
+            val progress = when (challenge.id) {
+                2 -> userStreak
+                5 -> friendsCount
+                6 -> teamsCount
+                else -> stepCountToday
+            }
+
             ChallengeType(
-                id = it.id,
-                name = it.name,
-                description = it.description,
-                type = it.type,
-                progress = 0, // later you’ll calculate this
-                target = it.target,
-                reward = it.reward,
-                badgeIcon = it.badgeIcon,
-                energyBonus = it.energyBonus
+                id = challenge.id,
+                name = challenge.name,
+                description = challenge.description,
+                type = challenge.type,
+                progress = progress,
+                target = challenge.target,
+                reward = challenge.reward,
+                badgeIcon = challenge.badgeIcon,
+                energyBonus = challenge.energyBonus
             )
         }
 
@@ -282,9 +305,17 @@ fun ChallengesScreen(navController: NavController, authRepository: AuthRepositor
                                 val uid = currentUser?.uid ?: return@ActiveTabContent
 
                                 authRepository.completeChallenge(uid, challenge.id) {
+
+                                    authRepository.updateEnergy(
+                                        userUid = uid,
+                                        deltaEnergy = challenge.energyBonus,
+                                        deltaTotalEnergy = challenge.energyBonus
+                                    )
+
                                     activeChallengeIds = activeChallengeIds - challenge.id
                                     completedChallengeIds = completedChallengeIds + challenge.id
                                 }
+
                             }
                         )
                         1 -> AvailableTabContent(
@@ -547,15 +578,22 @@ private fun ActiveChallengeCard(
                     Text("+${challenge.energyBonus}", color = accentOlive)
                 }
 
+                val isCompleted = challenge.progress >= challenge.target
                 Button(
                     onClick = { onCompleteClick(challenge) },
-                    colors = ButtonDefaults.buttonColors(containerColor = primary, contentColor = Color.White),
+                    enabled = isCompleted,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isCompleted) primary else Color.LightGray,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.LightGray,
+                        disabledContentColor = Color.White
+                    ),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .height(44.dp)
+                    modifier = Modifier.height(44.dp)
                 ) {
                     Text("Claim Badge")
                 }
+
             }
         }
     }

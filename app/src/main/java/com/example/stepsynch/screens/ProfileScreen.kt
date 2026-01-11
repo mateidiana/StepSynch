@@ -43,6 +43,8 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
     var completedRegionsCount by remember { mutableStateOf(0) }
     var teamName by remember { mutableStateOf("No team yet") }
     var earnedBadges by remember { mutableStateOf<List<AvailableChallenge>>(emptyList()) }
+    var activeChallengesCount by remember { mutableStateOf(0) }
+    var earnedBadgesCount by remember { mutableStateOf(0) }
 
     val availableChallenges = remember {
         listOf(
@@ -149,6 +151,13 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                 // Match completed IDs with availableChallenges
                 earnedBadges = availableChallenges.filter { it.id in completedIds }
             }
+            authRepository.getActiveChallengeCount(uid) {
+                activeChallengesCount = it
+            }
+
+            authRepository.getCompletedChallengeCount(uid) {
+                earnedBadgesCount = it
+            }
         }
     }
 
@@ -165,8 +174,8 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
             val rank = gameStats?.rank ?: 0
             val joinedDate = creationDate.toString()
             val teamName = teamName
-            val activeChallenges = gameStats?.activeChallengesCount ?: 0
-            val badgesEarned = gameStats?.earnedBadgesCount ?: 0
+            val activeChallenges = activeChallengesCount
+            val badgesEarned = earnedBadgesCount
 
     }
 
