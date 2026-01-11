@@ -31,6 +31,9 @@ import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
 import com.example.stepsynch.models.UserStatsGF
 import com.example.stepsynch.models.UserStatsGame
+import java.time.LocalDate
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
@@ -40,6 +43,10 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
     var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
     var activeChallenges by remember { mutableStateOf(0) }
     var earnedBadges by remember { mutableStateOf(0) }
+    var hasClaimedToday by remember { mutableStateOf(false) }
+    //val today = LocalDate.now().toString()
+    val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        .format(Calendar.getInstance().time)
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
@@ -63,6 +70,9 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
 
             authRepository.getCompletedChallengeCount(uid) {
                 earnedBadges = it
+            }
+            authRepository.hasClaimedEnergyToday(uid, today) {
+                hasClaimedToday = it
             }
         }
     }
@@ -195,6 +205,8 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
+                        val canClaim = currentSteps >= dailyGoal && !hasClaimedToday
+
                         val energyReward = dailyGoal / 10
 
                         if (currentSteps < dailyGoal) {
@@ -229,8 +241,16 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                         } else {
                             // --- Active button ---
                             Button(
+                                enabled = canClaim,
                                 onClick = {
-                                    // TODO: claim energy later
+                                    authRepository.claimDailyEnergy(
+                                        userUid = currentUser!!.uid,
+                                        energyReward = energyReward,
+                                        date = today,
+                                        onSuccess = {
+                                            hasClaimedToday = true
+                                        }
+                                    )
                                 },
                                 modifier = Modifier.height(40.dp),
                                 colors = ButtonDefaults.buttonColors(

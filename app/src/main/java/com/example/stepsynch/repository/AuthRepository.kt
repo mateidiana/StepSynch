@@ -9,6 +9,7 @@ import com.example.stepsynch.models.Friend
 import com.example.stepsynch.models.FriendRequest
 import com.example.stepsynch.models.ActiveChallenge
 import com.example.stepsynch.models.CompletedChallenge
+import com.example.stepsynch.models.ClaimedEnergyGoal
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -587,6 +588,67 @@ class AuthRepository {
                 onResult(0)
             }
     }
+
+    fun hasClaimedEnergyToday(
+        userUid: String,
+        date: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        firestore.collection("claimed_energy_goal")
+            .whereEqualTo("userUid", userUid)
+            .whereEqualTo("date", date)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(!snap.isEmpty)
+            }
+            .addOnFailureListener {
+                onResult(false)
+            }
+    }
+
+    fun claimDailyEnergy(
+        userUid: String,
+        energyReward: Int,
+        date: String,
+        onSuccess: () -> Unit = {},
+        onAlreadyClaimed: () -> Unit = {}
+    ) {
+        // 1️⃣ Check if already claimed today
+        firestore.collection("claimed_energy_goal")
+            .whereEqualTo("userUid", userUid)
+            .whereEqualTo("date", date)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+
+                if (!snap.isEmpty) {
+                    // Already claimed
+                    onAlreadyClaimed()
+                    return@addOnSuccessListener
+                }
+
+                // 2️⃣ Update energy using existing helper
+                updateEnergy(
+                    userUid = userUid,
+                    deltaEnergy = energyReward,
+                    deltaTotalEnergy = energyReward
+                )
+
+                // 3️⃣ Insert claim record
+                val entry = ClaimedEnergyGoal(
+                    userUid = userUid,
+                    date = date
+                )
+
+                firestore.collection("claimed_energy_goal")
+                    .add(entry)
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+            }
+    }
+
 
     fun ensureUserStats(uid: String) {
         val statsRef = firestore.collection("user_stats_gf").document(uid)
