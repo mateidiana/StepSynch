@@ -77,7 +77,7 @@ fun LeaderboardScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(16.dp),
+                .padding(16.dp, end = 16.dp, bottom = 16.dp, top = 40.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
@@ -180,7 +180,10 @@ fun LeaderboardCard(
             Text(
                 "#$position",
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(32.dp)
+                maxLines = 1,
+                softWrap = false,
+                modifier = Modifier.width(40.dp)
+                //modifier = Modifier.width(32.dp)
             )
 
             Box(

@@ -38,7 +38,13 @@ fun MapHeader(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
-            .padding(horizontal = 24.dp, vertical = 16.dp)
+            //.padding(horizontal = 24.dp, vertical = 16.dp)
+            .padding(
+                start = 24.dp,
+                end = 24.dp,
+                top = 32.dp,
+                bottom = 16.dp
+            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

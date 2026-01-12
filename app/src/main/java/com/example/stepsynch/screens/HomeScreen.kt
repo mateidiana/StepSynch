@@ -34,6 +34,9 @@ import com.example.stepsynch.models.UserStatsGame
 import java.time.LocalDate
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBars
 
 @Composable
 fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
@@ -114,8 +117,11 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(start = 24.dp, end = 24.dp, top = 45.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                //.padding(start = 24.dp, end = 24.dp, top = 45.dp, bottom = 16.dp),
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 16.dp),
+
+                    horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -167,17 +173,17 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                             Text("Today's Progress", color = Color(0xFF172815), fontWeight = FontWeight.Bold)
                             Text("Keep moving to reach your goal!", color = Color(0x993E5622))
                         }
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .background(
-                                    brush = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.DirectionsWalk, contentDescription = null, tint = Color.White)
-                        }
+//                        Box(
+//                            modifier = Modifier
+//                                .size(56.dp)
+//                                .background(
+//                                    brush = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
+//                                    shape = CircleShape
+//                                ),
+//                            contentAlignment = Alignment.Center
+//                        ) {
+//                            Icon(Icons.Default.DirectionsWalk, contentDescription = null, tint = Color.White)
+//                        }
                     }
 
                     Row(
@@ -342,7 +348,7 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                         onClick = { navController.navigate("friends") }
                     )
                     GradientButton(
-                        text = "View Leaderboard",
+                        text = "View Ranks",
                         icon = Icons.Default.EmojiEvents,
                         gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
                         modifier = Modifier.weight(1f),
@@ -356,8 +362,10 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository) {
                         text = "View Challenges",
                         icon = Icons.Default.Task,
                         gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
-                        modifier = Modifier.width(160.dp),
-                        onClick = { navController.navigate("challenges") }
+                        //modifier = Modifier.width(160.dp),
+                        modifier = Modifier.fillMaxWidth(),
+
+                                onClick = { navController.navigate("challenges") }
 
                     )
                 }

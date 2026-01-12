@@ -24,7 +24,13 @@ fun MapDetailBottomStats(
     Column(
         modifier = Modifier
             .background(Color.White)
-            .padding(16.dp)
+            //.padding(16.dp)
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 32.dp
+            )
     ) {
 
         Row(modifier = Modifier.fillMaxWidth(),

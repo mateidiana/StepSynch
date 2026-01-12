@@ -28,6 +28,9 @@ import com.example.stepsynch.models.Region
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.example.stepsynch.models.RegionType
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 
 @Composable
 fun RegionDetailPanel(
@@ -45,7 +48,7 @@ fun RegionDetailPanel(
     val surfaceGreen = Color(0xFFF8FAF6)
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars),
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(12.dp)
@@ -106,12 +109,12 @@ fun RegionDetailPanel(
                         iconColor = olive
                     )
 
-                    StatCard(
-                        label = "Steps Required",
-                        value = region.stepsRequired.toString(),
-                        icon = Icons.Default.NordicWalking,
-                        iconColor = deepGreen
-                    )
+//                    StatCard(
+//                        label = "Steps Required",
+//                        value = region.stepsRequired.toString(),
+//                        icon = Icons.Default.NordicWalking,
+//                        iconColor = deepGreen
+//                    )
                 }
 
                 if (region.teamRequired) {

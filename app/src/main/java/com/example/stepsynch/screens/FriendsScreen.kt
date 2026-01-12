@@ -185,10 +185,10 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TabButton("Discover people", selectedTab == "people") { selectedTab = "people" }
-            TabButton("Teams", selectedTab == "teams") { selectedTab = "teams" }
-            TabButton("Friends", selectedTab == "friends") { selectedTab = "friends" }
-            TabButton("Requests", selectedTab == "requests") { selectedTab = "requests" }
+            TabButton("Discover", selectedTab == "people", Modifier.weight(1f)) { selectedTab = "people" }
+            TabButton("Teams", selectedTab == "teams", Modifier.weight(1f)) { selectedTab = "teams" }
+            TabButton("Friends", selectedTab == "friends", Modifier.weight(1f)) { selectedTab = "friends" }
+            TabButton("Requests", selectedTab == "requests", Modifier.weight(1f)) { selectedTab = "requests" }
         }
 
         Spacer(Modifier.height(8.dp))
@@ -460,9 +460,16 @@ fun FriendsScreen(navController: NavController, authRepository: AuthRepository) 
 }
 
 @Composable
-fun TabButton(text: String, selected: Boolean, onClick: () -> Unit) {
-    TextButton(onClick = onClick) {
-        Text(text, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+fun TabButton(text: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    TextButton(onClick = onClick, modifier = modifier) {
+        //Text(text, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+        Text(
+            text,
+            maxLines = 1,
+            softWrap = false,
+            fontSize = 12.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
 

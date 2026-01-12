@@ -565,19 +565,44 @@ private fun ActiveChallengeCard(
                         .padding(top = 8.dp)
                 )
             }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            // rewards row
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
-                    Text(challenge.reward, color = titleDark)
+                // LEFT SIDE: reward + energy (stacked)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            tint = accentOlive,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(challenge.reward, color = titleDark)
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Bolt,
+                            contentDescription = null,
+                            tint = accentOlive,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text("+${challenge.energyBonus}", color = accentOlive)
+                    }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(Icons.Default.Bolt, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
-                    Text("+${challenge.energyBonus}", color = accentOlive)
-                }
-
+                // RIGHT SIDE: claim button
                 val isCompleted = challenge.progress >= challenge.target
                 Button(
                     onClick = { onCompleteClick(challenge) },
@@ -591,10 +616,40 @@ private fun ActiveChallengeCard(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.height(44.dp)
                 ) {
-                    Text("Claim Badge")
+                    Text("Claim")
                 }
-
             }
+
+
+            // rewards row
+//            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+//                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+//                    Icon(Icons.Default.Star, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
+//                    Text(challenge.reward, color = titleDark)
+//                }
+//
+//                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+//                    Icon(Icons.Default.Bolt, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
+//                    Text("+${challenge.energyBonus}", color = accentOlive)
+//                }
+//
+//                val isCompleted = challenge.progress >= challenge.target
+//                Button(
+//                    onClick = { onCompleteClick(challenge) },
+//                    enabled = isCompleted,
+//                    colors = ButtonDefaults.buttonColors(
+//                        containerColor = if (isCompleted) primary else Color.LightGray,
+//                        contentColor = Color.White,
+//                        disabledContainerColor = Color.LightGray,
+//                        disabledContentColor = Color.White
+//                    ),
+//                    shape = RoundedCornerShape(12.dp),
+//                    modifier = Modifier.height(44.dp)
+//                ) {
+//                    Text("Claim")
+//                }
+//
+//            }
         }
     }
 }
@@ -673,7 +728,7 @@ private fun AvailableChallengeCard(
                     modifier = Modifier
                         .height(44.dp)
                 ) {
-                    Text("Join Challenge")
+                    Text("Join")
                 }
             }
         }

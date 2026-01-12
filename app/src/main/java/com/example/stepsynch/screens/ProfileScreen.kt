@@ -409,7 +409,12 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        //.padding(horizontal = 16.dp)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 40.dp
+                        )
                 ) {
                     Button(
                         onClick = {

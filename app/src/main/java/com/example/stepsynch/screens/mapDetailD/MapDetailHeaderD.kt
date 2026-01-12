@@ -33,7 +33,13 @@ fun MapDetailHeaderD (
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White.copy(alpha = 0.9f))
-            .padding(16.dp)
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 32.dp,
+                bottom = 16.dp
+            )
+            //.padding(16.dp)
     ) {
 
         Row(
