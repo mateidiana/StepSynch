@@ -48,25 +48,86 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.FirebaseApp
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.setContent
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.fitness.Fitness
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.data.Field
+
+
 
 class MainActivity : ComponentActivity() {
+
+    private val GOOGLE_FIT_REQUEST = 1001
+
+    private val fitnessOptions = FitnessOptions.builder()
+        .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+        .build()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         FirebaseApp.initializeApp(this)
+
         setContent {
             StepSynchTheme {
-                AppNavigation()
-
+                AppNavigation(
+                    onRequestGoogleFit = { requestGoogleFit() }
+                )
             }
+        }
+    }
+
+    private fun requestGoogleFit() {
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+
+        if (!GoogleSignIn.hasPermissions(account, fitnessOptions)) {
+            GoogleSignIn.requestPermissions(
+                this,
+                GOOGLE_FIT_REQUEST,
+                account,
+                fitnessOptions
+            )
+        } else {
+            readSteps()
+        }
+    }
+
+    private fun readSteps() {
+        val account = GoogleSignIn.getLastSignedInAccount(this) ?: return
+
+        Fitness.getHistoryClient(this, account)
+            .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
+            .addOnSuccessListener { dataSet ->
+                val steps =
+                    if (dataSet.isEmpty) 0
+                    else dataSet.dataPoints[0]
+                        .getValue(Field.FIELD_STEPS)
+                        .asInt()
+
+                // TODO: save steps to ViewModel / Firebase
+                println("STEPS TODAY = $steps")
+            }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == GOOGLE_FIT_REQUEST && resultCode == Activity.RESULT_OK) {
+            readSteps()
         }
     }
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(onRequestGoogleFit: () -> Unit) {
     val navController = rememberNavController()
     val authRepository = remember { AuthRepository() }
+
     NavHost(navController = navController, startDestination = "welcome") {
 
         composable("welcome") {
@@ -82,7 +143,7 @@ fun AppNavigation() {
             OnboardScreen(navController, authRepository)
         }
         composable("home") {
-            HomeScreen(navController, authRepository)
+            HomeScreen(navController, authRepository, onConnectGoogleFit = onRequestGoogleFit)
         }
         composable("challenges") {
             ChallengesScreen(navController, authRepository)

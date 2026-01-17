@@ -1,5 +1,6 @@
 package com.example.stepsynch.repository
 
+import UserStats
 import com.example.stepsynch.models.User
 import com.example.stepsynch.models.UserStatsGF
 import com.example.stepsynch.models.UserStatsGame
@@ -15,6 +16,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import kotlin.text.get
 
 class AuthRepository {
 
@@ -52,7 +56,12 @@ class AuthRepository {
                         email = email,
                         username = username
                     )
-
+                    val defaultStats = UserStats(
+                        currentSteps = 0,
+                        dailyGoal = 10000,
+                        currentEnergy = 0,
+                        streak = 0
+                    )
                     firebaseUser?.uid?.let { uid ->
                         firestore.collection("users")
                             .document(uid)
@@ -119,6 +128,7 @@ class AuthRepository {
                             .add(completedRegion)
 
                     }
+
 
                 } else {
                     onResult(false, task.exception?.localizedMessage)
