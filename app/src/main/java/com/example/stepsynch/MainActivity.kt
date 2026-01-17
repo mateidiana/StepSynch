@@ -143,7 +143,7 @@ fun AppNavigation(onRequestGoogleFit: () -> Unit) {
             OnboardScreen(navController, authRepository)
         }
         composable("home") {
-            HomeScreen(navController, authRepository, onConnectGoogleFit = onRequestGoogleFit)
+            HomeScreen(navController, authRepository)
         }
         composable("challenges") {
             ChallengesScreen(navController, authRepository)

@@ -39,7 +39,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.statusBars
 
 @Composable
-fun HomeScreen(navController: NavController, authRepository: AuthRepository, onConnectGoogleFit: () -> Unit ) {
+fun HomeScreen(navController: NavController, authRepository: AuthRepository ) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
     var stats by remember { mutableStateOf<UserStatsGF?>(null) }
