@@ -28,9 +28,10 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.navigation.NavController
 import kotlin.math.roundToInt
+import com.example.stepsynch.repository.AuthRepository
 
 @Composable
-fun ChallengesScreen(navController: NavController) {
+fun ChallengesScreen(navController: NavController, authRepository: AuthRepository) {
     // Color palette (match your earlier palette)
     val bgTop = Color(0xFFF8FAF6)
     val bgBottom = Color(0x1995B46A) // semi-transparent
@@ -44,52 +45,64 @@ fun ChallengesScreen(navController: NavController) {
     val muted = Color(0x993E5622)
     val deepGreen = Color(0xFF3E5622)
 
-    // Sample data (same as your JS version)
-    val activeChallenges = remember {
-        listOf(
-            ChallengeType(
-                id = 1,
-                name = "Weekend Warrior",
-                description = "Walk 15,000 steps on Saturday",
-                type = "daily",
-                progress = 8234,
-                target = 15000,
-                reward = "Bronze Medal",
-                badgeIcon = "🥉",
-                timeLeft = "2 days",
-                energyBonus = 500
-            ),
-            ChallengeType(
-                id = 2,
-                name = "Team Explorer",
-                description = "Complete 3 regions with your team",
-                type = "team",
-                progress = 1,
-                target = 3,
-                reward = "Team Explorer Badge",
-                badgeIcon = "🗺️",
-                timeLeft = "5 days",
-                energyBonus = 1000
-            ),
-            ChallengeType(
-                id = 3,
-                name = "Morning Mover",
-                description = "Walk 5,000 steps before 10 AM",
-                type = "daily",
-                progress = 3456,
-                target = 5000,
-                reward = "Early Bird Badge",
-                badgeIcon = "🌅",
-                timeLeft = "Today",
-                energyBonus = 300
-            )
-        )
+    val currentUser by authRepository.currentUser.collectAsState()
+
+    var activeChallengeIds by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var completedChallengeIds by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var stepCountToday by remember { mutableStateOf(0) }
+    var userStreak by remember { mutableStateOf(0) }
+    var friendsCount by remember { mutableStateOf(0) }
+    var teamsCount by remember { mutableStateOf(0) }
+
+    LaunchedEffect(currentUser) {
+        currentUser?.uid?.let { uid ->
+            authRepository.getActiveChallenges(uid) {
+                activeChallengeIds = it
+            }
+
+            authRepository.getCompletedChallenges(uid) {
+                completedChallengeIds = it
+            }
+
+            authRepository.getUserStats(uid) { stats ->
+                stepCountToday = stats?.stepCountToday ?: 0
+                userStreak = stats?.streak ?: 0
+            }
+            authRepository.getFriends(uid) { friends ->
+                friendsCount = friends.size
+            }
+            authRepository.getUserTeamsCount(uid) { count ->
+                teamsCount = count
+            }
+        }
     }
 
     val availableChallenges = remember {
         listOf(
             AvailableChallenge(
-                id = 4,
+                id = 1,
+                name = "First Steps",
+                description = "Complete your first day",
+                type = "daily",
+                target = 2000,
+                difficulty = "Easy",
+                reward = "Welcome Badge",
+                badgeIcon = "👋",
+                energyBonus = 150
+            ),
+            AvailableChallenge(
+                id = 2,
+                name = "Daily Streak",
+                description = "Walk 5 days in a row",
+                type = "daily",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Streak Starter",
+                badgeIcon = "🔥",
+                energyBonus = 300
+            ),
+            AvailableChallenge(
+                id = 3,
                 name = "10K Champion",
                 description = "Reach 10,000 steps every day for a week",
                 type = "weekly",
@@ -98,10 +111,9 @@ fun ChallengesScreen(navController: NavController) {
                 reward = "Consistency Master",
                 badgeIcon = "⭐",
                 energyBonus = 2000,
-                participants = 1234
             ),
             AvailableChallenge(
-                id = 5,
+                id = 4,
                 name = "Ultra Walker",
                 description = "Walk 50,000 steps in a single day",
                 type = "special",
@@ -110,47 +122,82 @@ fun ChallengesScreen(navController: NavController) {
                 reward = "Ultra Badge",
                 badgeIcon = "💎",
                 energyBonus = 5000,
-                participants = 89
             ),
             AvailableChallenge(
-                id = 6,
+                id = 5,
                 name = "Social Butterfly",
-                description = "Add 5 new friends this week",
+                description = "Add 5 new friends",
                 type = "social",
                 target = 5,
                 difficulty = "Easy",
                 reward = "Community Star",
                 badgeIcon = "🦋",
-                energyBonus = 800,
-                participants = 567
+                energyBonus = 500,
+            ),
+            AvailableChallenge(
+                id = 6,
+                name = "Team explorer",
+                description = "Join 1 team",
+                type = "social",
+                target = 1,
+                difficulty = "Easy",
+                reward = "Team badge",
+                badgeIcon = "🗺️",
+                energyBonus = 300,
             )
         )
     }
 
-    val completedChallenges = remember {
-        listOf(
-            CompletedChallenge(
-                id = 7,
-                name = "First Steps",
-                description = "Complete your first day",
-                completedDate = "Nov 15, 2025",
-                reward = "Welcome Badge",
-                badgeIcon = "👋"
-            ),
-            CompletedChallenge(
-                id = 8,
-                name = "Daily Streak",
-                description = "Walk 5 days in a row",
-                completedDate = "Nov 18, 2025",
-                reward = "Streak Starter",
-                badgeIcon = "🔥"
+    val activeChallenges = availableChallenges
+        .filter { activeChallengeIds.contains(it.id) }
+        .map { challenge ->
+
+            val progress = when (challenge.id) {
+                2 -> userStreak
+                5 -> friendsCount
+                6 -> teamsCount
+                else -> stepCountToday
+            }
+
+            ChallengeType(
+                id = challenge.id,
+                name = challenge.name,
+                description = challenge.description,
+                type = challenge.type,
+                progress = progress,
+                target = challenge.target,
+                reward = challenge.reward,
+                badgeIcon = challenge.badgeIcon,
+                energyBonus = challenge.energyBonus
             )
-        )
+        }
+
+    val availableChallengesFiltered = availableChallenges.filter {
+        !activeChallengeIds.contains(it.id) &&
+                !completedChallengeIds.contains(it.id)
     }
+
+    val completedChallenges = availableChallenges
+        .filter { completedChallengeIds.contains(it.id) }
+        .map {
+            CompletedChallenge(
+                id = it.id,
+                name = it.name,
+                description = it.description,
+                completedDate = "Completed",
+                reward = it.reward,
+                badgeIcon = it.badgeIcon
+            )
+        }
+
 
     // Tab state
     var selectedTab by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Active (${activeChallenges.size})", "Available", "Completed (${completedChallenges.size})")
+    val tabTitles = listOf(
+        "Active (${activeChallengeIds.size})",
+        "Available",
+        "Completed (${completedChallengeIds.size})"
+    )
 
 
     Surface(
@@ -253,16 +300,38 @@ fun ChallengesScreen(navController: NavController) {
                             midGreen = midGreen,
                             accentOlive = accentOlive,
                             titleDark = titleDark,
-                            muted = muted
+                            muted = muted,
+                            onCompleteClick = { challenge ->
+                                val uid = currentUser?.uid ?: return@ActiveTabContent
+
+                                authRepository.completeChallenge(uid, challenge.id) {
+
+                                    authRepository.updateEnergy(
+                                        userUid = uid,
+                                        deltaEnergy = challenge.energyBonus,
+                                        deltaTotalEnergy = challenge.energyBonus
+                                    )
+
+                                    activeChallengeIds = activeChallengeIds - challenge.id
+                                    completedChallengeIds = completedChallengeIds + challenge.id
+                                }
+
+                            }
                         )
                         1 -> AvailableTabContent(
-                            items = availableChallenges,
+                            items = availableChallengesFiltered,
                             primary = primary,
                             midGreen = midGreen,
                             accentOlive = accentOlive,
                             titleDark = titleDark,
                             muted = muted,
-                            onJoinClick = { /* TODO: join action */ }
+                            onJoinClick = { challenge ->
+                                val uid = currentUser?.uid ?: return@AvailableTabContent
+
+                                authRepository.addActiveChallenge(uid, challenge.id) {
+                                    activeChallengeIds = activeChallengeIds + challenge.id
+                                }
+                            }
                         )
                         2 -> CompletedTabContent(
                             items = completedChallenges,
@@ -315,7 +384,8 @@ private fun ActiveTabContent(
     midGreen: Color,
     accentOlive: Color,
     titleDark: Color,
-    muted: Color
+    muted: Color,
+    onCompleteClick: (ChallengeType) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -331,7 +401,8 @@ private fun ActiveTabContent(
                 midGreen = midGreen,
                 accentOlive = accentOlive,
                 titleDark = titleDark,
-                muted = muted
+                muted = muted,
+                onCompleteClick = onCompleteClick
             )
         }
     }
@@ -438,7 +509,8 @@ private fun ActiveChallengeCard(
     midGreen: Color,
     accentOlive: Color,
     titleDark: Color,
-    muted: Color
+    muted: Color,
+    onCompleteClick: (ChallengeType) -> Unit
 ) {
     val progressFraction = (challenge.progress.toFloat() / challenge.target.toFloat()).coerceIn(0f, 1f)
     Card(
@@ -466,7 +538,6 @@ private fun ActiveChallengeCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(challenge.name, color = titleDark, fontWeight = FontWeight.Bold)
-                        BadgeComposable(text = challenge.timeLeft, tint = accentOlive)
                     }
 
                     Text(challenge.description, color = muted, modifier = Modifier.padding(top = 6.dp))
@@ -494,19 +565,91 @@ private fun ActiveChallengeCard(
                         .padding(top = 8.dp)
                 )
             }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            // rewards row
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
-                    Text(challenge.reward, color = titleDark)
+                // LEFT SIDE: reward + energy (stacked)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            tint = accentOlive,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(challenge.reward, color = titleDark)
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Bolt,
+                            contentDescription = null,
+                            tint = accentOlive,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text("+${challenge.energyBonus}", color = accentOlive)
+                    }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(Icons.Default.Bolt, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
-                    Text("+${challenge.energyBonus}", color = accentOlive)
+                // RIGHT SIDE: claim button
+                val isCompleted = challenge.progress >= challenge.target
+                Button(
+                    onClick = { onCompleteClick(challenge) },
+                    enabled = isCompleted,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isCompleted) primary else Color.LightGray,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.LightGray,
+                        disabledContentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.height(44.dp)
+                ) {
+                    Text("Claim")
                 }
             }
+
+
+            // rewards row
+//            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+//                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+//                    Icon(Icons.Default.Star, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
+//                    Text(challenge.reward, color = titleDark)
+//                }
+//
+//                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+//                    Icon(Icons.Default.Bolt, contentDescription = null, tint = accentOlive, modifier = Modifier.size(18.dp))
+//                    Text("+${challenge.energyBonus}", color = accentOlive)
+//                }
+//
+//                val isCompleted = challenge.progress >= challenge.target
+//                Button(
+//                    onClick = { onCompleteClick(challenge) },
+//                    enabled = isCompleted,
+//                    colors = ButtonDefaults.buttonColors(
+//                        containerColor = if (isCompleted) primary else Color.LightGray,
+//                        contentColor = Color.White,
+//                        disabledContainerColor = Color.LightGray,
+//                        disabledContentColor = Color.White
+//                    ),
+//                    shape = RoundedCornerShape(12.dp),
+//                    modifier = Modifier.height(44.dp)
+//                ) {
+//                    Text("Claim")
+//                }
+//
+//            }
         }
     }
 }
@@ -552,10 +695,6 @@ private fun AvailableChallengeCard(
                             Text(challenge.type.capitalize(), color = muted)
                         }
 
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.Group, contentDescription = null, tint = Color(0x993E5622), modifier = Modifier.size(16.dp))
-                            Text("${challenge.participants} joined", color = muted)
-                        }
                     }
                 }
             }
@@ -589,7 +728,7 @@ private fun AvailableChallengeCard(
                     modifier = Modifier
                         .height(44.dp)
                 ) {
-                    Text("Join Challenge")
+                    Text("Join")
                 }
             }
         }
@@ -700,11 +839,10 @@ private data class ChallengeType(
     val target: Int,
     val reward: String,
     val badgeIcon: String,
-    val timeLeft: String,
     val energyBonus: Int
 )
 
-private data class AvailableChallenge(
+data class AvailableChallenge(
     val id: Int,
     val name: String,
     val description: String,
@@ -713,8 +851,7 @@ private data class AvailableChallenge(
     val difficulty: String,
     val reward: String,
     val badgeIcon: String,
-    val energyBonus: Int,
-    val participants: Int
+    val energyBonus: Int
 )
 
 private data class CompletedChallenge(

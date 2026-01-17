@@ -30,40 +30,153 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.stepsynch.models.UserStatsGF
+import com.example.stepsynch.models.UserStatsGame
 import com.example.stepsynch.repository.AuthRepository
 
 @Composable
 fun ProfileScreen(navController: NavController, authRepository: AuthRepository) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
+    var stats by remember { mutableStateOf<UserStatsGF?>(null) }
+    var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+    var completedRegionsCount by remember { mutableStateOf(0) }
+    var teamName by remember { mutableStateOf("No team yet") }
+    var earnedBadges by remember { mutableStateOf<List<AvailableChallenge>>(emptyList()) }
+    var activeChallengesCount by remember { mutableStateOf(0) }
+    var earnedBadgesCount by remember { mutableStateOf(0) }
+
+    val availableChallenges = remember {
+        listOf(
+            AvailableChallenge(
+                id = 1,
+                name = "First Steps",
+                description = "Complete your first day",
+                type = "daily",
+                target = 2000,
+                difficulty = "Easy",
+                reward = "Welcome Badge",
+                badgeIcon = "👋",
+                energyBonus = 150
+            ),
+            AvailableChallenge(
+                id = 2,
+                name = "Daily Streak",
+                description = "Walk 5 days in a row",
+                type = "daily",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Streak Starter",
+                badgeIcon = "🔥",
+                energyBonus = 300
+            ),
+            AvailableChallenge(
+                id = 3,
+                name = "10K Champion",
+                description = "Reach 10,000 steps every day for a week",
+                type = "weekly",
+                target = 7,
+                difficulty = "Medium",
+                reward = "Consistency Master",
+                badgeIcon = "⭐",
+                energyBonus = 2000,
+            ),
+            AvailableChallenge(
+                id = 4,
+                name = "Ultra Walker",
+                description = "Walk 50,000 steps in a single day",
+                type = "special",
+                target = 50000,
+                difficulty = "Hard",
+                reward = "Ultra Badge",
+                badgeIcon = "💎",
+                energyBonus = 5000,
+            ),
+            AvailableChallenge(
+                id = 5,
+                name = "Social Butterfly",
+                description = "Add 5 new friends",
+                type = "social",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Community Star",
+                badgeIcon = "🦋",
+                energyBonus = 500,
+            ),
+            AvailableChallenge(
+                id = 6,
+                name = "Team explorer",
+                description = "Join 1 team",
+                type = "social",
+                target = 5,
+                difficulty = "Easy",
+                reward = "Team badge",
+                badgeIcon = "🗺️",
+                energyBonus = 300,
+            )
+        )
+    }
+
+    val teams = remember {
+        listOf(
+            Team(1, "The Steppers", 0, 0, Color.Unspecified)
+        )
+    }
+
+    val creationDate = currentUser?.metadata?.creationTimestamp
+        ?.let { timestamp ->
+            java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+                .format(java.util.Date(timestamp))
+        }
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
             authRepository.getUser(uid) { user ->
                 username = user?.username
             }
+            authRepository.getUserStats(uid) { userStats ->
+                stats = userStats
+            }
+            authRepository.getUserGameStats(uid) { userGameStats ->
+                gameStats = userGameStats
+            }
+            authRepository.getCompletedRegionCount(uid) { count ->
+                completedRegionsCount = count
+            }
+            authRepository.getUserTeam(uid) { teamId ->
+                teamName = teams.firstOrNull { it.id == teamId }?.name
+                    ?: "No team yet"
+            }
+            authRepository.getCompletedChallenges(uid) { completedIds ->
+                // Match completed IDs with availableChallenges
+                earnedBadges = availableChallenges.filter { it.id in completedIds }
+            }
+            authRepository.getActiveChallengeCount(uid) {
+                activeChallengesCount = it
+            }
+
+            authRepository.getCompletedChallengeCount(uid) {
+                earnedBadgesCount = it
+            }
         }
     }
 
     val userStats = object {
 
-            val name = username ?: "null"
-            val initials = "PIC"
-            val level = 12
-            val totalSteps = 345_678
-            val totalEnergy = 34_567
-            val streak = 7
-            val rank = 3
-            val joinedDate = "Sep 15, 2025"
-            val teamName = "The Steppers"
+            val name = username ?: "Loading"
+            //val initials = "PIC"
+            val initials: String = username?.split(" ")?.filter { it.isNotEmpty() }
+                ?.map { it.first().uppercaseChar() }?.joinToString("")?.take(2)
+                ?: "??"
+            val totalSteps = gameStats?.totalSteps ?: 0
+            val totalEnergy = gameStats?.totalEnergyPoints ?: 0
+            val streak = stats?.streak ?: 0
+            val rank = gameStats?.rank ?: 0
+            val joinedDate = creationDate.toString()
+            val teamName = teamName
+            val activeChallenges = activeChallengesCount
+            val badgesEarned = earnedBadgesCount
 
-    }
-
-    val earnedBadges = remember {
-        listOf(
-            Triple("First Steps", "👋", "Common"),
-            Triple("Daily Streak", "🔥", "Common")
-        )
     }
 
     val completedChallenges = remember {
@@ -73,7 +186,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
         )
     }
 
-    val nextLevelProgress = 75f
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(Color(0xFFF8FAF6), Color(0xFF95B46A).copy(alpha = 0.1f))
@@ -96,7 +208,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp)
+                        .height(180.dp)
                         .background(
                             Brush.linearGradient(
                                 listOf(Color(0xFF3E5622), Color(0xFF709255))
@@ -157,12 +269,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
 
                                 Row {
                                     Badge(
-                                        backgroundColor = Color.White.copy(alpha = 0.2f),
-                                        textColor = Color.White,
-                                        text = "Level ${userStats.level}"
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Badge(
                                         backgroundColor = Color(0xFF83781B),
                                         textColor = Color.White,
                                         text = "Rank #${userStats.rank}",
@@ -179,36 +285,6 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                                 tint = Color.White
                             )
                         }
-                    }
-
-                    // Bottom: progress bar
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomStart)
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-
-                        Text(
-                            "Progress to Level ${userStats.level + 1}",
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 14.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        LinearProgressIndicator(
-                            progress = nextLevelProgress / 100f,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp),
-                            color = Color.White,
-                            trackColor = Color.White.copy(alpha = 0.2f)
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text("${nextLevelProgress.toInt()}%", color = Color.White)
                     }
                 }
 
@@ -230,8 +306,8 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                         val stat = when (index) {
                             0 -> Triple("Total Steps", userStats.totalSteps.toString(), Icons.Default.DirectionsWalk)
                             1 -> Triple("Total Energy", userStats.totalEnergy.toString(), Icons.Default.Bolt)
-                            2 -> Triple("Badges Earned", earnedBadges.size.toString(), Icons.Default.Star)
-                            else -> Triple("Active Challenges", "3", Icons.Default.EmojiEvents)
+                            2 -> Triple("Badges Earned", userStats.badgesEarned.toString(), Icons.Default.Star)
+                            else -> Triple("Active Challenges", userStats.activeChallenges.toString(), Icons.Default.EmojiEvents)
                         }
 
                         Card(
@@ -282,7 +358,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                         InfoRow("Member Since", userStats.joinedDate, Icons.Default.CalendarToday)
                         InfoRow("Team", userStats.teamName, Icons.Default.Group)
                         InfoRow("Current Streak", "${userStats.streak} days", Icons.Default.TrendingUp)
-                        InfoRow("Regions Explored", "3 / 10", Icons.Default.Place)
+                        InfoRow("Regions Explored", "$completedRegionsCount / 10", Icons.Default.Place)
                     }
                 }
 
@@ -315,47 +391,15 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                                     .background(Color(0xFF95B46A).copy(alpha = 0.3f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(badge.second, fontSize = 20.sp)
+                                Text(badge.badgeIcon, fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(badge.first, fontSize = 12.sp, textAlign = TextAlign.Center)
+                            Text(badge.name, fontSize = 12.sp, textAlign = TextAlign.Center)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
-
-
-                // ---------------- COMPLETED CHALLENGES ----------------
-                Text(
-                    "Completed Challenges",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 10.dp)
-                )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    completedChallenges.forEach { challenge ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                Text(challenge.first, fontWeight = FontWeight.Bold)
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("${challenge.third} steps", color = Color(0xFF3E5622))
-                                    Text(challenge.second, color = Color.Gray)
-                                }
-                            }
-                        }
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -365,10 +409,22 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        //.padding(horizontal = 16.dp)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 40.dp
+                        )
                 ) {
                     Button(
-                        onClick = { },
+                        onClick = {
+                            authRepository.logout()
+
+                            navController.navigate("welcome") {
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = Color.White,
                             contentColor = Color(0xFF3E5622)
@@ -377,20 +433,7 @@ fun ProfileScreen(navController: NavController, authRepository: AuthRepository) 
                     ) {
                         Icon(Icons.Default.TrackChanges, contentDescription = null)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Set Goals")
-                    }
-
-                    Button(
-                        onClick = { },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = Color.White,
-                            contentColor = Color(0xFF3E5622)
-                        ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.Settings, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Settings")
+                        Text("Log out")
                     }
                 }
 

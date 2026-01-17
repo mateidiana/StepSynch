@@ -1,12 +1,7 @@
 package com.example.stepsynch.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
@@ -26,73 +21,89 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.navigation.NavController
 import com.example.stepsynch.repository.AuthRepository
 import kotlin.math.roundToInt
+import com.example.stepsynch.models.UserStatsGF
+import com.example.stepsynch.models.UserStatsGame
+import java.time.LocalDate
+import java.text.SimpleDateFormat
+import java.util.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBars
 
 @Composable
 fun HomeScreen(navController: NavController, authRepository: AuthRepository, onConnectGoogleFit: () -> Unit ) {
     val currentUser by authRepository.currentUser.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
-    var currentSteps by remember { mutableStateOf(0) }
-    var dailyGoal by remember { mutableStateOf(10000) }
-    var currentEnergy by remember { mutableStateOf(0) }
-    var streak by remember { mutableStateOf(0) }
+    var stats by remember { mutableStateOf<UserStatsGF?>(null) }
+    var gameStats by remember { mutableStateOf<UserStatsGame?>(null) }
+    var activeChallenges by remember { mutableStateOf(0) }
+    var earnedBadges by remember { mutableStateOf(0) }
+    var hasClaimedToday by remember { mutableStateOf(false) }
+    //val today = LocalDate.now().toString()
+    val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        .format(Calendar.getInstance().time)
 
     LaunchedEffect(currentUser) {
         currentUser?.uid?.let { uid ->
+            //authRepository.ensureUserStats(uid)
+            //authRepository.ensureUserStatsGame(uid)
+            //authRepository.ensureAddedLandmark(uid)
+            //authRepository.ensureCompletedRegion(uid)
+
             authRepository.getUser(uid) { user ->
                 username = user?.username
             }
-            authRepository.getUserStats(uid) { stats ->
-                stats?.let {
-                    currentSteps = it.currentSteps
-                    dailyGoal = it.dailyGoal
-                    currentEnergy = it.currentEnergy
-                    streak = it.streak
-                }
+            authRepository.getUserStats(uid) { userStats ->
+                stats = userStats
+            }
+            authRepository.getUserGameStats(uid) { userGameStats ->
+                gameStats = userGameStats
+            }
+            authRepository.getActiveChallengeCount(uid) {
+                activeChallenges = it
+            }
+
+            authRepository.getCompletedChallengeCount(uid) {
+                earnedBadges = it
+            }
+            authRepository.hasClaimedEnergyToday(uid, today) {
+                hasClaimedToday = it
             }
         }
 
     }
 
-
-    val stepProgress = (currentSteps / dailyGoal.toFloat()) * 100
-
+    val dailyGoal = stats?.dailyStepGoal ?: 0
+    val currentSteps = stats?.stepCountToday ?: 0
+    //val stepProgress = (currentSteps / dailyGoal.toFloat()) * 100
+    val stepProgress =
+        if (dailyGoal > 0) {
+            (currentSteps / dailyGoal.toFloat()) * 100
+        } else {
+            0f
+        }
+    val currentEnergy = gameStats?.energyPoints ?: 0
+    val streak = stats?.streak ?: 0
+    val weeklyAvg = stats?.weeklyAverage ?: 0
+    val thisWeek = stats?.stepCountThisWeek ?: 0
+    val calories = stats?.caloriesToday ?: 0
+    val distance = stats?.distanceToday ?: 0
+    //val activeChallenges = gameStats?.activeChallengesCount ?: 0
+    //val earnedBadges = gameStats?.earnedBadgesCount ?: 0
 
     val quickStats = listOf(
-        QuickStat("Weekly Avg", "9,450", Icons.Default.TrendingUp, Color(0xFF709255)),
-        QuickStat("This Week", "58,234", Icons.Default.DirectionsWalk, Color(0xFF95B46A)),
-        QuickStat("Active Challenges", "3", Icons.Default.Task, Color(0xFF83781B)),
-        QuickStat("Badges Earned", "2", Icons.Default.EmojiEvents, Color(0xFF3E5622)),
-    )
-
-    val activeChallenges = listOf(
-        Challenge(
-            "Weekend Warrior",
-            "Walk 15,000 steps on Saturday",
-            progress = 8234,
-            target = 15000,
-            reward = "Bronze Medal",
-            timeLeft = "2 days left"
-        ),
-        Challenge(
-            "Team Explorer",
-            "Complete 3 regions with your team",
-            progress = 1,
-            target = 3,
-            reward = "Team Badge",
-            timeLeft = "5 days left"
-        )
+        QuickStat("Weekly Avg", weeklyAvg.toString(), Icons.Default.TrendingUp, Color(0xFF709255)),
+        QuickStat("This Week", thisWeek.toString(), Icons.Default.DirectionsWalk, Color(0xFF95B46A)),
+        QuickStat("Active Challenges", activeChallenges.toString(), Icons.Default.Task, Color(0xFF83781B)),
+        QuickStat("Badges Earned", earnedBadges.toString(), Icons.Default.EmojiEvents, Color(0xFF3E5622)),
     )
 
     val lightBackground = Brush.verticalGradient(listOf(Color(0xFFF8FAF6), Color(0x3395B46A)))
@@ -107,8 +118,11 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(start = 24.dp, end = 24.dp, top = 45.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                //.padding(start = 24.dp, end = 24.dp, top = 45.dp, bottom = 16.dp),
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 16.dp),
+
+                    horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -160,17 +174,17 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
                             Text("Today's Progress", color = Color(0xFF172815), fontWeight = FontWeight.Bold)
                             Text("Keep moving to reach your goal!", color = Color(0x993E5622))
                         }
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .background(
-                                    brush = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.DirectionsWalk, contentDescription = null, tint = Color.White)
-                        }
+//                        Box(
+//                            modifier = Modifier
+//                                .size(56.dp)
+//                                .background(
+//                                    brush = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
+//                                    shape = CircleShape
+//                                ),
+//                            contentAlignment = Alignment.Center
+//                        ) {
+//                            Icon(Icons.Default.DirectionsWalk, contentDescription = null, tint = Color.White)
+//                        }
                     }
 
                     Row(
@@ -190,9 +204,80 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
                     )
 
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        StatItem(label = "Calories", value = "245 kcal")
-                        StatItem(label = "Distance", value = "6.2 km")
-                        StatItem(label = "Energy Earned", value = "+823", valueColor = Color(0xFF83781B))
+                        StatItem(label = "Calories", value = calories.toString())
+                        StatItem(label = "Distance", value = distance.toString())
+
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        val canClaim = currentSteps >= dailyGoal && !hasClaimedToday
+
+                        val energyReward = dailyGoal / 10
+
+                        if (currentSteps < dailyGoal) {
+                            // --- Inactive button ---
+                            OutlinedButton(
+                                onClick = {},
+                                enabled = false,
+                                modifier = Modifier.height(40.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    disabledContentColor = Color(0xFF83781B)
+                                )
+                            ) {
+                                Text(
+                                    text = "Reach goal to earn ",
+                                    //text = energyReward.toString(),
+                                    color = Color(0xFF83781B)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = null,
+                                    tint = Color(0xFF83781B),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = energyReward.toString(),
+                                    color = Color(0xFF83781B),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            // --- Active button ---
+                            Button(
+                                enabled = canClaim,
+                                onClick = {
+                                    authRepository.claimDailyEnergy(
+                                        userUid = currentUser!!.uid,
+                                        energyReward = energyReward,
+                                        date = today,
+                                        onSuccess = {
+                                            hasClaimedToday = true
+                                        }
+                                    )
+                                },
+                                modifier = Modifier.height(40.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF83781B),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("Claim ")
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = energyReward.toString(),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -232,54 +317,6 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
                 }
             }
 
-
-            // Active Challenges
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Active Challenges", fontWeight = FontWeight.Bold, color = Color(0xFF172815))
-                    Text("   View All", color = Color(0xFF3E5622), modifier = Modifier.clickable { navController.navigate("challenges") })
-                }
-
-                activeChallenges.forEach { challenge ->
-                    val progress = (challenge.progress.toFloat() / challenge.target) * 100
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                        Text(challenge.name, fontWeight = FontWeight.Bold, color = Color(0xFF172815))
-                                        Badge(text = challenge.timeLeft)
-                                    }
-                                    Text(challenge.description, color = Color(0x993E5622))
-                                }
-                            }
-
-                            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                Text("${challenge.progress} / ${challenge.target}", color = Color(0xFF3E5622))
-                                Text("${progress.roundToInt()}%", color = Color(0xFF709255))
-                            }
-
-                            LinearProgressIndicator(
-                                progress = progress / 100f,
-                                color = Color(0xFF709255),
-                                trackColor = Color(0x333E5622),
-                                modifier = Modifier
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                            )
-
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFF83781B))
-                                Text("Reward: ${challenge.reward}", color = Color(0xFF172815))
-                            }
-                        }
-                    }
-                }
-            }
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -291,7 +328,7 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
                         icon = Icons.Default.Map,
                         gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
                         modifier = Modifier.weight(1f),
-                        onClick = { /*TO DO*/ }
+                        onClick = { navController.navigate("map") }
                     )
                     GradientButton(
                         text = "View Profile",
@@ -312,7 +349,7 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
                         onClick = { navController.navigate("friends") }
                     )
                     GradientButton(
-                        text = "View Leaderboard",
+                        text = "View Ranks",
                         icon = Icons.Default.EmojiEvents,
                         gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
                         modifier = Modifier.weight(1f),
@@ -326,11 +363,12 @@ fun HomeScreen(navController: NavController, authRepository: AuthRepository, onC
                         text = "View Challenges",
                         icon = Icons.Default.Task,
                         gradient = Brush.linearGradient(listOf(Color(0xFF3E5622), Color(0xFF709255))),
-                        modifier = Modifier.width(160.dp),
-                        onClick = { navController.navigate("challenges") }
+                        //modifier = Modifier.width(160.dp),
+                        modifier = Modifier.fillMaxWidth(),
+
+                                onClick = { navController.navigate("challenges") }
 
                     )
-//                    Spacer(modifier = Modifier.weight(1f)) // empty space to balance the row
                 }
             }
 
@@ -400,4 +438,3 @@ fun GradientButton(text: String, icon: ImageVector, gradient: Brush, modifier: M
 
 // --- Data Classes ---
 data class QuickStat(val label: String, val value: String, val icon: ImageVector, val color: Color)
-data class Challenge(val name: String, val description: String, val progress: Int, val target: Int, val reward: String, val timeLeft: String)
